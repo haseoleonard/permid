@@ -38,14 +38,6 @@ abstract contract IdentityStorage {
     mapping(address => mapping(address => mapping(DataTypes.DataField => bool))) public fieldAccess;
 
     // ============================================
-    // DECRYPTION CACHE STORAGE
-    // ============================================
-
-    /// @notice Decryption cache for shared fields: owner => field => DecryptionInfo
-    /// @dev Stores decrypted values after v0.9 self-relaying workflow completion
-    mapping(address => mapping(DataTypes.DataField => DataTypes.DecryptionInfo)) public decryptionCache;
-
-    // ============================================
     // REQUEST TRACKING STORAGE
     // ============================================
 

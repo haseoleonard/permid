@@ -61,45 +61,6 @@ const _abi = [
         type: "address",
       },
       {
-        internalType: "enum DataTypes.DataField",
-        name: "",
-        type: "uint8",
-      },
-    ],
-    name: "decryptionCache",
-    outputs: [
-      {
-        internalType: "euint64",
-        name: "pendingValue",
-        type: "bytes32",
-      },
-      {
-        internalType: "bool",
-        name: "isDecrypted",
-        type: "bool",
-      },
-      {
-        internalType: "uint64",
-        name: "decryptedValue",
-        type: "uint64",
-      },
-      {
-        internalType: "uint256",
-        name: "timestamp",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-      {
         internalType: "address",
         name: "",
         type: "address",

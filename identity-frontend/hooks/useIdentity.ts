@@ -4,15 +4,25 @@ import { useWallets } from '@privy-io/react-auth';
 import { createPublicClient, createWalletClient, custom, http } from 'viem';
 import { sepolia } from 'viem/chains';
 import { useFhevm } from '../contexts/FhevmContext';
-import { usePublicDecrypt } from './usePublicDecrypt';
+import { useEncrypt } from './useEncrypt';
+import { useDecrypt } from './useDecrypt';
 import { IDENTITY_REGISTRY_ADDRESS } from '../lib/contracts/config';
 import { IDENTITY_REGISTRY_ABI } from '../lib/contracts/identityAbi';
-import { DataField, DecryptStatus, DecryptionInfo, FieldAccessMap } from '../types';
+import { DataField, FieldAccessMap } from '../types';
+import { convertProfileToUint64 } from '../lib/utils/encoding';
+
+/**
+ * Convert Uint8Array to hex string
+ */
+function toHex(bytes: Uint8Array): `0x${string}` {
+  return `0x${Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('')}` as `0x${string}`;
+}
 
 export function useIdentity() {
   const { wallets } = useWallets();
   const { instance: fhevm, isInitialized } = useFhevm();
-  const { publicDecrypt } = usePublicDecrypt();
+  const { encryptProfile } = useEncrypt();
+  const { decrypt } = useDecrypt();
   const [loading, setLoading] = useState(false);
 
   const wallet = wallets[0];
@@ -58,27 +68,26 @@ export function useIdentity() {
       try {
         const client = await getWalletClient();
 
-        // Encrypt all fields
-        const encryptedEmail = await fhevm.encrypt64(BigInt(profileData.email));
-        const encryptedDob = await fhevm.encrypt64(BigInt(profileData.dob));
-        const encryptedName = await fhevm.encrypt64(BigInt(profileData.name));
-        const encryptedIdNumber = await fhevm.encrypt64(BigInt(profileData.idNumber));
-        const encryptedLocation = await fhevm.encrypt64(BigInt(profileData.location));
-        const encryptedExperience = await fhevm.encrypt64(BigInt(profileData.experience));
-        const encryptedCountry = await fhevm.encrypt64(BigInt(profileData.country));
+        // Convert strings to uint64 values
+        const numericData = convertProfileToUint64(profileData);
 
+        // Encrypt all fields at once
+        const { handles, inputProof } = await encryptProfile(numericData);
+
+        // Convert Uint8Array to hex strings for viem
         const hash = await client.writeContract({
           address: IDENTITY_REGISTRY_ADDRESS,
           abi: IDENTITY_REGISTRY_ABI,
           functionName: 'createProfile',
           args: [
-            encryptedEmail,
-            encryptedDob,
-            encryptedName,
-            encryptedIdNumber,
-            encryptedLocation,
-            encryptedExperience,
-            encryptedCountry,
+            toHex(handles[0]), // email
+            toHex(handles[1]), // dob
+            toHex(handles[2]), // name
+            toHex(handles[3]), // idNumber
+            toHex(handles[4]), // location
+            toHex(handles[5]), // experience
+            toHex(handles[6]), // country
+            toHex(inputProof), // proof for all fields
           ],
         });
 
@@ -88,7 +97,7 @@ export function useIdentity() {
         setLoading(false);
       }
     },
-    [isInitialized, fhevm, wallet, getWalletClient, publicClient]
+    [isInitialized, fhevm, wallet, getWalletClient, publicClient, encryptProfile]
   );
 
   /**
@@ -111,27 +120,26 @@ export function useIdentity() {
       try {
         const client = await getWalletClient();
 
-        // Encrypt all fields
-        const encryptedEmail = await fhevm.encrypt64(BigInt(profileData.email));
-        const encryptedDob = await fhevm.encrypt64(BigInt(profileData.dob));
-        const encryptedName = await fhevm.encrypt64(BigInt(profileData.name));
-        const encryptedIdNumber = await fhevm.encrypt64(BigInt(profileData.idNumber));
-        const encryptedLocation = await fhevm.encrypt64(BigInt(profileData.location));
-        const encryptedExperience = await fhevm.encrypt64(BigInt(profileData.experience));
-        const encryptedCountry = await fhevm.encrypt64(BigInt(profileData.country));
+        // Convert strings to uint64 values
+        const numericData = convertProfileToUint64(profileData);
 
+        // Encrypt all fields at once
+        const { handles, inputProof } = await encryptProfile(numericData);
+
+        // Convert Uint8Array to hex strings for viem
         const hash = await client.writeContract({
           address: IDENTITY_REGISTRY_ADDRESS,
           abi: IDENTITY_REGISTRY_ABI,
           functionName: 'updateProfile',
           args: [
-            encryptedEmail,
-            encryptedDob,
-            encryptedName,
-            encryptedIdNumber,
-            encryptedLocation,
-            encryptedExperience,
-            encryptedCountry,
+            toHex(handles[0]), // email
+            toHex(handles[1]), // dob
+            toHex(handles[2]), // name
+            toHex(handles[3]), // idNumber
+            toHex(handles[4]), // location
+            toHex(handles[5]), // experience
+            toHex(handles[6]), // country
+            toHex(inputProof), // proof for all fields
           ],
         });
 
@@ -141,7 +149,7 @@ export function useIdentity() {
         setLoading(false);
       }
     },
-    [isInitialized, fhevm, wallet, getWalletClient, publicClient]
+    [isInitialized, fhevm, wallet, getWalletClient, publicClient, encryptProfile]
   );
 
   // ============================================
@@ -230,54 +238,34 @@ export function useIdentity() {
   );
 
   // ============================================
-  // DECRYPTION (v0.9 self-relaying workflow)
+  // CLIENT-SIDE DECRYPTION (Reencryption approach)
   // ============================================
 
   /**
-   * Complete field decryption workflow (all 4 steps)
+   * Get encrypted field and decrypt it client-side
    */
-  const completeFieldDecryption = useCallback(
-    async (field: DataField) => {
-      if (!isInitialized || !fhevm) throw new Error('FHEVM not initialized');
+  const getAndDecryptField = useCallback(
+    async (dataOwner: string, field: DataField): Promise<bigint> => {
+      if (!isInitialized) throw new Error('FHEVM not initialized');
       if (!wallet) throw new Error('Wallet not connected');
 
       const client = await getWalletClient();
 
-      // Step 1: Mark as publicly decryptable
-      const markHash = await client.writeContract({
+      // Get the encrypted field handle using wallet client (requires msg.sender to be authorized)
+      const encryptedHandle = await publicClient.readContract({
         address: IDENTITY_REGISTRY_ADDRESS,
         abi: IDENTITY_REGISTRY_ABI,
-        functionName: 'requestFieldDecryption',
-        args: [field],
-      });
-      await publicClient.waitForTransactionReceipt({ hash: markHash });
-
-      // Step 2: Get encrypted handle
-      const handle = await publicClient.readContract({
-        address: IDENTITY_REGISTRY_ADDRESS,
-        abi: IDENTITY_REGISTRY_ABI,
-        functionName: 'getPendingFieldHandle',
-        args: [field],
+        functionName: 'getEncryptedField',
+        args: [dataOwner as `0x${string}`, field],
+        account: client.account,
       });
 
-      // Step 3: Decrypt using SDK
-      const { cleartext, abiEncodedCleartext, decryptionProof } = await publicDecrypt(
-        handle,
-        IDENTITY_REGISTRY_ADDRESS
-      );
+      // Decrypt client-side using useDecrypt hook (handles EIP712 signature)
+      const decryptedValue = await decrypt(encryptedHandle as string, IDENTITY_REGISTRY_ADDRESS);
 
-      // Step 4: Submit proof
-      const submitHash = await client.writeContract({
-        address: IDENTITY_REGISTRY_ADDRESS,
-        abi: IDENTITY_REGISTRY_ABI,
-        functionName: 'submitFieldDecryption',
-        args: [field, cleartext, abiEncodedCleartext, decryptionProof],
-      });
-      await publicClient.waitForTransactionReceipt({ hash: submitHash });
-
-      return { cleartext, hash: submitHash };
+      return decryptedValue;
     },
-    [isInitialized, fhevm, wallet, getWalletClient, publicClient, publicDecrypt]
+    [isInitialized, wallet, publicClient, getWalletClient, decrypt]
   );
 
   // ============================================
@@ -315,7 +303,7 @@ export function useIdentity() {
   /**
    * Get incoming access requests
    */
-  const getIncomingRequests = useCallback(async () => {
+  const getMyIncomingRequests = useCallback(async () => {
     if (!wallet) throw new Error('Wallet not connected');
 
     const client = await getWalletClient();
@@ -331,7 +319,7 @@ export function useIdentity() {
   /**
    * Get outgoing access requests
    */
-  const getOutgoingRequests = useCallback(async () => {
+  const getMyOutgoingRequests = useCallback(async () => {
     if (!wallet) throw new Error('Wallet not connected');
 
     const client = await getWalletClient();
@@ -392,25 +380,6 @@ export function useIdentity() {
     [publicClient]
   );
 
-  /**
-   * View shared field value
-   */
-  const viewSharedField = useCallback(
-    async (dataOwner: string, field: DataField) => {
-      if (!wallet) throw new Error('Wallet not connected');
-
-      const value = await publicClient.readContract({
-        address: IDENTITY_REGISTRY_ADDRESS,
-        abi: IDENTITY_REGISTRY_ABI,
-        functionName: 'viewSharedField',
-        args: [dataOwner as `0x${string}`, field],
-      });
-
-      return value;
-    },
-    [wallet, publicClient]
-  );
-
   return {
     // Profile management
     createProfile,
@@ -422,16 +391,15 @@ export function useIdentity() {
     grantAccess,
     revokeAccess,
 
-    // Decryption
-    completeFieldDecryption,
+    // Client-side decryption
+    getAndDecryptField,
 
     // Queries
     getAllProfiles,
-    getIncomingRequests,
-    getOutgoingRequests,
+    getMyIncomingRequests,
+    getMyOutgoingRequests,
     getAccessRequestStatus,
     getGrantedFields,
-    viewSharedField,
 
     // State
     loading,

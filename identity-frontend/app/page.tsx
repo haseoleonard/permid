@@ -45,29 +45,23 @@ export default function Home() {
         {!authenticated ? (
           <button
             onClick={login}
-            className="mt-8 bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition font-medium"
+            className="mt-8 bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition font-medium"
           >
             Connect Wallet to Get Started
           </button>
         ) : (
-          <div className="mt-8 flex gap-4 justify-center">
+          <div className="mt-8 flex gap-4 justify-center flex-wrap">
             <Link
               href="/profile/create"
-              className="bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition font-medium"
+              className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition font-medium"
             >
               Create Profile
             </Link>
             <Link
               href="/dashboard"
-              className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition font-medium"
+              className="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition font-medium"
             >
               My Dashboard
-            </Link>
-            <Link
-              href="/requests"
-              className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition font-medium"
-            >
-              Access Requests
             </Link>
           </div>
         )}
@@ -114,7 +108,7 @@ export default function Home() {
 
         {loadingProfiles ? (
           <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         ) : profiles.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
@@ -129,7 +123,7 @@ export default function Home() {
                 className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition"
               >
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                     <span className="text-2xl">👤</span>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -138,7 +132,7 @@ export default function Home() {
                     </p>
                   </div>
                 </div>
-                <div className="text-sm text-purple-600 font-medium">
+                <div className="text-sm text-blue-600 font-medium">
                   View Profile →
                 </div>
               </Link>

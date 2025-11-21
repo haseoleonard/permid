@@ -89,50 +89,6 @@ const _abi = [
       },
       {
         indexed: false,
-        internalType: "enum DataTypes.DataField",
-        name: "field",
-        type: "uint8",
-      },
-      {
-        indexed: false,
-        internalType: "uint64",
-        name: "value",
-        type: "uint64",
-      },
-    ],
-    name: "FieldDecrypted",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "enum DataTypes.DataField",
-        name: "field",
-        type: "uint8",
-      },
-    ],
-    name: "FieldMarkedForDecryption",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-      {
-        indexed: false,
         internalType: "uint256",
         name: "timestamp",
         type: "uint256",
@@ -273,6 +229,30 @@ const _abi = [
         type: "address",
       },
       {
+        internalType: "enum DataTypes.DataField",
+        name: "field",
+        type: "uint8",
+      },
+    ],
+    name: "getEncryptedField",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "dataOwner",
+        type: "address",
+      },
+      {
         internalType: "address",
         name: "requester",
         type: "address",
@@ -361,25 +341,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "enum DataTypes.DataField",
-        name: "field",
-        type: "uint8",
-      },
-    ],
-    name: "getPendingFieldHandle",
-    outputs: [
-      {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "address",
         name: "requester",
         type: "address",
@@ -435,48 +396,12 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "enum DataTypes.DataField",
-        name: "field",
-        type: "uint8",
-      },
-    ],
-    name: "requestFieldDecryption",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "address",
         name: "requester",
         type: "address",
       },
     ],
     name: "revokeAccess",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "enum DataTypes.DataField",
-        name: "field",
-        type: "uint8",
-      },
-      {
-        internalType: "uint64",
-        name: "decryptedValue",
-        type: "uint64",
-      },
-      {
-        internalType: "bytes",
-        name: "proof",
-        type: "bytes",
-      },
-    ],
-    name: "submitFieldDecryption",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -527,30 +452,6 @@ const _abi = [
     name: "updateProfile",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "dataOwner",
-        type: "address",
-      },
-      {
-        internalType: "enum DataTypes.DataField",
-        name: "field",
-        type: "uint8",
-      },
-    ],
-    name: "viewSharedField",
-    outputs: [
-      {
-        internalType: "uint64",
-        name: "",
-        type: "uint64",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
 ] as const;

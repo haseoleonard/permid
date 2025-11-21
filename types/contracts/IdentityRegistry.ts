@@ -29,26 +29,22 @@ export interface IdentityRegistryInterface extends Interface {
       | "accessRequests"
       | "confidentialProtocolId"
       | "createProfile"
-      | "decryptionCache"
       | "fieldAccess"
       | "getAccessRequestStatus"
       | "getAllProfileOwners"
+      | "getEncryptedField"
       | "getGrantedFields"
       | "getMyIncomingRequests"
       | "getMyOutgoingRequests"
       | "getMyProfile"
-      | "getPendingFieldHandle"
       | "grantAccess"
       | "hasProfile"
       | "incomingRequests"
       | "outgoingRequests"
       | "profileOwners"
       | "requestAccess"
-      | "requestFieldDecryption"
       | "revokeAccess"
-      | "submitFieldDecryption"
       | "updateProfile"
-      | "viewSharedField"
   ): FunctionFragment;
 
   getEvent(
@@ -56,11 +52,8 @@ export interface IdentityRegistryInterface extends Interface {
       | "AccessGranted"
       | "AccessRequested"
       | "AccessRevoked"
-      | "FieldDecrypted"
-      | "FieldMarkedForDecryption"
       | "ProfileCreated"
       | "ProfileUpdated"
-      | "PublicDecryptionVerified"
   ): EventFragment;
 
   encodeFunctionData(
@@ -85,10 +78,6 @@ export interface IdentityRegistryInterface extends Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "decryptionCache",
-    values: [AddressLike, BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "fieldAccess",
     values: [AddressLike, AddressLike, BigNumberish]
   ): string;
@@ -99,6 +88,10 @@ export interface IdentityRegistryInterface extends Interface {
   encodeFunctionData(
     functionFragment: "getAllProfileOwners",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getEncryptedField",
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getGrantedFields",
@@ -115,10 +108,6 @@ export interface IdentityRegistryInterface extends Interface {
   encodeFunctionData(
     functionFragment: "getMyProfile",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getPendingFieldHandle",
-    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "grantAccess",
@@ -145,16 +134,8 @@ export interface IdentityRegistryInterface extends Interface {
     values: [AddressLike, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "requestFieldDecryption",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "revokeAccess",
     values: [AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "submitFieldDecryption",
-    values: [BigNumberish, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "updateProfile",
@@ -168,10 +149,6 @@ export interface IdentityRegistryInterface extends Interface {
       BytesLike,
       BytesLike
     ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "viewSharedField",
-    values: [AddressLike, BigNumberish]
   ): string;
 
   decodeFunctionResult(
@@ -187,10 +164,6 @@ export interface IdentityRegistryInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "decryptionCache",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "fieldAccess",
     data: BytesLike
   ): Result;
@@ -200,6 +173,10 @@ export interface IdentityRegistryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getAllProfileOwners",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getEncryptedField",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -216,10 +193,6 @@ export interface IdentityRegistryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getMyProfile",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getPendingFieldHandle",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -244,23 +217,11 @@ export interface IdentityRegistryInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "requestFieldDecryption",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "revokeAccess",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "submitFieldDecryption",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "updateProfile",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "viewSharedField",
     data: BytesLike
   ): Result;
 }
@@ -322,37 +283,6 @@ export namespace AccessRevokedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace FieldDecryptedEvent {
-  export type InputTuple = [
-    owner: AddressLike,
-    field: BigNumberish,
-    value: BigNumberish
-  ];
-  export type OutputTuple = [owner: string, field: bigint, value: bigint];
-  export interface OutputObject {
-    owner: string;
-    field: bigint;
-    value: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace FieldMarkedForDecryptionEvent {
-  export type InputTuple = [owner: AddressLike, field: BigNumberish];
-  export type OutputTuple = [owner: string, field: bigint];
-  export interface OutputObject {
-    owner: string;
-    field: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
 export namespace ProfileCreatedEvent {
   export type InputTuple = [owner: AddressLike, timestamp: BigNumberish];
   export type OutputTuple = [owner: string, timestamp: bigint];
@@ -372,25 +302,6 @@ export namespace ProfileUpdatedEvent {
   export interface OutputObject {
     owner: string;
     timestamp: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace PublicDecryptionVerifiedEvent {
-  export type InputTuple = [
-    handlesList: BytesLike[],
-    abiEncodedCleartexts: BytesLike
-  ];
-  export type OutputTuple = [
-    handlesList: string[],
-    abiEncodedCleartexts: string
-  ];
-  export interface OutputObject {
-    handlesList: string[];
-    abiEncodedCleartexts: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -472,19 +383,6 @@ export interface IdentityRegistry extends BaseContract {
     "nonpayable"
   >;
 
-  decryptionCache: TypedContractMethod<
-    [arg0: AddressLike, arg1: BigNumberish],
-    [
-      [string, boolean, bigint, bigint] & {
-        pendingValue: string;
-        isDecrypted: boolean;
-        decryptedValue: bigint;
-        timestamp: bigint;
-      }
-    ],
-    "view"
-  >;
-
   fieldAccess: TypedContractMethod<
     [arg0: AddressLike, arg1: AddressLike, arg2: BigNumberish],
     [boolean],
@@ -506,6 +404,12 @@ export interface IdentityRegistry extends BaseContract {
   >;
 
   getAllProfileOwners: TypedContractMethod<[], [string[]], "view">;
+
+  getEncryptedField: TypedContractMethod<
+    [dataOwner: AddressLike, field: BigNumberish],
+    [string],
+    "view"
+  >;
 
   getGrantedFields: TypedContractMethod<
     [dataOwner: AddressLike, requester: AddressLike],
@@ -530,12 +434,6 @@ export interface IdentityRegistry extends BaseContract {
         countryHandle: string;
       }
     ],
-    "view"
-  >;
-
-  getPendingFieldHandle: TypedContractMethod<
-    [field: BigNumberish],
-    [string],
     "view"
   >;
 
@@ -567,20 +465,8 @@ export interface IdentityRegistry extends BaseContract {
     "nonpayable"
   >;
 
-  requestFieldDecryption: TypedContractMethod<
-    [field: BigNumberish],
-    [void],
-    "nonpayable"
-  >;
-
   revokeAccess: TypedContractMethod<
     [requester: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-
-  submitFieldDecryption: TypedContractMethod<
-    [field: BigNumberish, decryptedValue: BigNumberish, proof: BytesLike],
     [void],
     "nonpayable"
   >;
@@ -598,12 +484,6 @@ export interface IdentityRegistry extends BaseContract {
     ],
     [void],
     "nonpayable"
-  >;
-
-  viewSharedField: TypedContractMethod<
-    [dataOwner: AddressLike, field: BigNumberish],
-    [bigint],
-    "view"
   >;
 
   getFunction<T extends ContractMethod = ContractMethod>(
@@ -645,20 +525,6 @@ export interface IdentityRegistry extends BaseContract {
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "decryptionCache"
-  ): TypedContractMethod<
-    [arg0: AddressLike, arg1: BigNumberish],
-    [
-      [string, boolean, bigint, bigint] & {
-        pendingValue: string;
-        isDecrypted: boolean;
-        decryptedValue: bigint;
-        timestamp: bigint;
-      }
-    ],
-    "view"
-  >;
-  getFunction(
     nameOrSignature: "fieldAccess"
   ): TypedContractMethod<
     [arg0: AddressLike, arg1: AddressLike, arg2: BigNumberish],
@@ -683,6 +549,13 @@ export interface IdentityRegistry extends BaseContract {
   getFunction(
     nameOrSignature: "getAllProfileOwners"
   ): TypedContractMethod<[], [string[]], "view">;
+  getFunction(
+    nameOrSignature: "getEncryptedField"
+  ): TypedContractMethod<
+    [dataOwner: AddressLike, field: BigNumberish],
+    [string],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "getGrantedFields"
   ): TypedContractMethod<
@@ -713,9 +586,6 @@ export interface IdentityRegistry extends BaseContract {
     ],
     "view"
   >;
-  getFunction(
-    nameOrSignature: "getPendingFieldHandle"
-  ): TypedContractMethod<[field: BigNumberish], [string], "view">;
   getFunction(
     nameOrSignature: "grantAccess"
   ): TypedContractMethod<
@@ -751,18 +621,8 @@ export interface IdentityRegistry extends BaseContract {
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "requestFieldDecryption"
-  ): TypedContractMethod<[field: BigNumberish], [void], "nonpayable">;
-  getFunction(
     nameOrSignature: "revokeAccess"
   ): TypedContractMethod<[requester: AddressLike], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "submitFieldDecryption"
-  ): TypedContractMethod<
-    [field: BigNumberish, decryptedValue: BigNumberish, proof: BytesLike],
-    [void],
-    "nonpayable"
-  >;
   getFunction(
     nameOrSignature: "updateProfile"
   ): TypedContractMethod<
@@ -778,13 +638,6 @@ export interface IdentityRegistry extends BaseContract {
     ],
     [void],
     "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "viewSharedField"
-  ): TypedContractMethod<
-    [dataOwner: AddressLike, field: BigNumberish],
-    [bigint],
-    "view"
   >;
 
   getEvent(
@@ -809,20 +662,6 @@ export interface IdentityRegistry extends BaseContract {
     AccessRevokedEvent.OutputObject
   >;
   getEvent(
-    key: "FieldDecrypted"
-  ): TypedContractEvent<
-    FieldDecryptedEvent.InputTuple,
-    FieldDecryptedEvent.OutputTuple,
-    FieldDecryptedEvent.OutputObject
-  >;
-  getEvent(
-    key: "FieldMarkedForDecryption"
-  ): TypedContractEvent<
-    FieldMarkedForDecryptionEvent.InputTuple,
-    FieldMarkedForDecryptionEvent.OutputTuple,
-    FieldMarkedForDecryptionEvent.OutputObject
-  >;
-  getEvent(
     key: "ProfileCreated"
   ): TypedContractEvent<
     ProfileCreatedEvent.InputTuple,
@@ -835,13 +674,6 @@ export interface IdentityRegistry extends BaseContract {
     ProfileUpdatedEvent.InputTuple,
     ProfileUpdatedEvent.OutputTuple,
     ProfileUpdatedEvent.OutputObject
-  >;
-  getEvent(
-    key: "PublicDecryptionVerified"
-  ): TypedContractEvent<
-    PublicDecryptionVerifiedEvent.InputTuple,
-    PublicDecryptionVerifiedEvent.OutputTuple,
-    PublicDecryptionVerifiedEvent.OutputObject
   >;
 
   filters: {
@@ -878,28 +710,6 @@ export interface IdentityRegistry extends BaseContract {
       AccessRevokedEvent.OutputObject
     >;
 
-    "FieldDecrypted(address,uint8,uint64)": TypedContractEvent<
-      FieldDecryptedEvent.InputTuple,
-      FieldDecryptedEvent.OutputTuple,
-      FieldDecryptedEvent.OutputObject
-    >;
-    FieldDecrypted: TypedContractEvent<
-      FieldDecryptedEvent.InputTuple,
-      FieldDecryptedEvent.OutputTuple,
-      FieldDecryptedEvent.OutputObject
-    >;
-
-    "FieldMarkedForDecryption(address,uint8)": TypedContractEvent<
-      FieldMarkedForDecryptionEvent.InputTuple,
-      FieldMarkedForDecryptionEvent.OutputTuple,
-      FieldMarkedForDecryptionEvent.OutputObject
-    >;
-    FieldMarkedForDecryption: TypedContractEvent<
-      FieldMarkedForDecryptionEvent.InputTuple,
-      FieldMarkedForDecryptionEvent.OutputTuple,
-      FieldMarkedForDecryptionEvent.OutputObject
-    >;
-
     "ProfileCreated(address,uint256)": TypedContractEvent<
       ProfileCreatedEvent.InputTuple,
       ProfileCreatedEvent.OutputTuple,
@@ -920,17 +730,6 @@ export interface IdentityRegistry extends BaseContract {
       ProfileUpdatedEvent.InputTuple,
       ProfileUpdatedEvent.OutputTuple,
       ProfileUpdatedEvent.OutputObject
-    >;
-
-    "PublicDecryptionVerified(bytes32[],bytes)": TypedContractEvent<
-      PublicDecryptionVerifiedEvent.InputTuple,
-      PublicDecryptionVerifiedEvent.OutputTuple,
-      PublicDecryptionVerifiedEvent.OutputObject
-    >;
-    PublicDecryptionVerified: TypedContractEvent<
-      PublicDecryptionVerifiedEvent.InputTuple,
-      PublicDecryptionVerifiedEvent.OutputTuple,
-      PublicDecryptionVerifiedEvent.OutputObject
     >;
   };
 }

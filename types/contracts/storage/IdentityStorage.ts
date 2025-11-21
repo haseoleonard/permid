@@ -25,7 +25,6 @@ export interface IdentityStorageInterface extends Interface {
   getFunction(
     nameOrSignature:
       | "accessRequests"
-      | "decryptionCache"
       | "fieldAccess"
       | "incomingRequests"
       | "outgoingRequests"
@@ -35,10 +34,6 @@ export interface IdentityStorageInterface extends Interface {
   encodeFunctionData(
     functionFragment: "accessRequests",
     values: [AddressLike, AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "decryptionCache",
-    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "fieldAccess",
@@ -59,10 +54,6 @@ export interface IdentityStorageInterface extends Interface {
 
   decodeFunctionResult(
     functionFragment: "accessRequests",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "decryptionCache",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -140,19 +131,6 @@ export interface IdentityStorage extends BaseContract {
     "view"
   >;
 
-  decryptionCache: TypedContractMethod<
-    [arg0: AddressLike, arg1: BigNumberish],
-    [
-      [string, boolean, bigint, bigint] & {
-        pendingValue: string;
-        isDecrypted: boolean;
-        decryptedValue: bigint;
-        timestamp: bigint;
-      }
-    ],
-    "view"
-  >;
-
   fieldAccess: TypedContractMethod<
     [arg0: AddressLike, arg1: AddressLike, arg2: BigNumberish],
     [boolean],
@@ -188,20 +166,6 @@ export interface IdentityStorage extends BaseContract {
         timestamp: bigint;
         pending: boolean;
         granted: boolean;
-      }
-    ],
-    "view"
-  >;
-  getFunction(
-    nameOrSignature: "decryptionCache"
-  ): TypedContractMethod<
-    [arg0: AddressLike, arg1: BigNumberish],
-    [
-      [string, boolean, bigint, bigint] & {
-        pendingValue: string;
-        isDecrypted: boolean;
-        decryptedValue: bigint;
-        timestamp: bigint;
       }
     ],
     "view"

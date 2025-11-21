@@ -47,14 +47,4 @@ library DataTypes {
         EXPERIENCE,
         COUNTRY
     }
-
-    /**
-     * @dev Decryption status for v0.9 self-relaying workflow
-     */
-    struct DecryptionInfo {
-        euint64 pendingValue;
-        bool isDecrypted;
-        uint64 decryptedValue;
-        uint256 timestamp;
-    }
 }

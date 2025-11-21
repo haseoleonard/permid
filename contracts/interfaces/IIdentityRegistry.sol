@@ -60,28 +60,6 @@ interface IIdentityRegistry {
         address indexed requester
     );
 
-    /**
-     * @notice Emitted when a field is marked for decryption
-     * @param owner Address of the profile owner
-     * @param field Field that was marked
-     */
-    event FieldMarkedForDecryption(
-        address indexed owner,
-        DataTypes.DataField field
-    );
-
-    /**
-     * @notice Emitted when a field is successfully decrypted
-     * @param owner Address of the profile owner
-     * @param field Field that was decrypted
-     * @param value Decrypted value
-     */
-    event FieldDecrypted(
-        address indexed owner,
-        DataTypes.DataField field,
-        uint64 value
-    );
-
     // ============================================
     // EXTERNAL FUNCTIONS
     // ============================================
@@ -129,26 +107,13 @@ interface IIdentityRegistry {
 
     function revokeAccess(address requester) external;
 
-    // Decryption Management
-    function requestFieldDecryption(DataTypes.DataField field) external;
-
-    function submitFieldDecryption(
-        DataTypes.DataField field,
-        uint64 decryptedValue,
-        bytes calldata proof
-    ) external;
-
-    function getPendingFieldHandle(DataTypes.DataField field)
+    // Encrypted Data Access
+    function getEncryptedField(address dataOwner, DataTypes.DataField field)
         external
         view
         returns (bytes32);
 
     // View Functions
-    function viewSharedField(address dataOwner, DataTypes.DataField field)
-        external
-        view
-        returns (uint64);
-
     function getGrantedFields(address dataOwner, address requester)
         external
         view

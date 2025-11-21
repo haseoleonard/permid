@@ -9,9 +9,7 @@ import "@nomicfoundation/hardhat-verify";
 import "hardhat-deploy";
 
 // Get environment variables (use hardhat vars for security)
-const MNEMONIC = vars.get("MNEMONIC", "test test test test test test test test test test test junk");
-const INFURA_API_KEY = vars.get("INFURA_API_KEY", "");
-const ETHERSCAN_API_KEY = vars.get("ETHERSCAN_API_KEY", "");
+const PRIVATE_KEY = vars.has("PRIVATE_KEY") ? vars.get("PRIVATE_KEY") : process.env.PRIVATE_KEY;
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -35,18 +33,9 @@ const config: HardhatUserConfig = {
       chainId: 31337,
     },
     sepolia: {
-      url: INFURA_API_KEY
-        ? `https://sepolia.infura.io/v3/${INFURA_API_KEY}`
-        : "https://ethereum-sepolia-rpc.publicnode.com", // Free public RPC
-      accounts: {
-        mnemonic: MNEMONIC,
-        path: "m/44'/60'/0'/0",
-        initialIndex: 0,
-        count: 10,
-      },
+      url: process.env.SEPOLIA_RPC_URL || "https://ethereum-sepolia-rpc.publicnode.com",
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
       chainId: 11155111,
-      gasPrice: "auto",
-      timeout: 60000, // Increase timeout for public RPCs
     },
   },
 
@@ -65,9 +54,7 @@ const config: HardhatUserConfig = {
   },
 
   etherscan: {
-    apiKey: {
-      sepolia: ETHERSCAN_API_KEY,
-    },
+    apiKey: process.env.ETHERSCAN_API_KEY || "",
   },
 
   typechain: {

@@ -184,9 +184,15 @@ contract IdentityRegistry is IIdentityRegistry, ZamaEthereumConfig, IdentityStor
         accessRequests[msg.sender][requester].granted = true;
         accessRequests[msg.sender][requester].pending = false;
 
-        // Grant access to specific fields
+        DataTypes.Profile storage profile = profiles[msg.sender];
+
+        // Grant access to specific fields and give TFHE.allow permissions
         for (uint i = 0; i < fields.length; i++) {
             fieldAccess[msg.sender][requester][fields[i]] = true;
+
+            // Grant FHE decryption permission to requester
+            euint64 fieldValue = _getFieldValue(profile, fields[i]);
+            FHE.allow(fieldValue, requester);
         }
 
         emit AccessGranted(msg.sender, requester, fields);
@@ -205,73 +211,22 @@ contract IdentityRegistry is IIdentityRegistry, ZamaEthereumConfig, IdentityStor
     }
 
     // ============================================
-    // DECRYPTION MANAGEMENT (v0.9 self-relaying)
+    // ENCRYPTED DATA ACCESS
     // ============================================
 
     /// @inheritdoc IIdentityRegistry
-    function requestFieldDecryption(DataTypes.DataField field) external onlyProfileOwner {
-        DataTypes.Profile storage profile = profiles[msg.sender];
-        euint64 fieldValue = _getFieldValue(profile, field);
-
-        // Mark as publicly decryptable
-        FHE.makePubliclyDecryptable(fieldValue);
-
-        // Store pending value
-        decryptionCache[msg.sender][field].pendingValue = fieldValue;
-
-        emit FieldMarkedForDecryption(msg.sender, field);
-    }
-
-    /// @inheritdoc IIdentityRegistry
-    function submitFieldDecryption(
-        DataTypes.DataField field,
-        uint64 decryptedValue,
-        bytes calldata proof
-    ) external onlyProfileOwner {
-        DataTypes.Profile storage profile = profiles[msg.sender];
-        euint64 fieldValue = _getFieldValue(profile, field);
-
-        // Verify the decryption proof
-        bytes32[] memory handles = new bytes32[](1);
-        handles[0] = FHE.toBytes32(fieldValue);
-        bytes memory cleartexts = abi.encode(decryptedValue);
-        FHE.checkSignatures(handles, cleartexts, proof);
-
-        // Store decrypted value
-        decryptionCache[msg.sender][field].isDecrypted = true;
-        decryptionCache[msg.sender][field].decryptedValue = decryptedValue;
-        decryptionCache[msg.sender][field].timestamp = block.timestamp;
-
-        emit FieldDecrypted(msg.sender, field, decryptedValue);
-    }
-
-    /// @inheritdoc IIdentityRegistry
-    function getPendingFieldHandle(DataTypes.DataField field)
-        external
-        view
-        onlyProfileOwner
-        returns (bytes32)
-    {
-        euint64 pendingValue = decryptionCache[msg.sender][field].pendingValue;
-        if (!FHE.isInitialized(pendingValue)) revert Errors.ValueNotInitialized();
-        return FHE.toBytes32(pendingValue);
-    }
-
-    // ============================================
-    // VIEW SHARED DATA
-    // ============================================
-
-    /// @inheritdoc IIdentityRegistry
-    function viewSharedField(address dataOwner, DataTypes.DataField field)
+    function getEncryptedField(address dataOwner, DataTypes.DataField field)
         external
         view
         profileExists(dataOwner)
-        returns (uint64)
+        returns (bytes32)
     {
         if (!fieldAccess[dataOwner][msg.sender][field]) revert Errors.AccessNotGranted();
-        if (!decryptionCache[dataOwner][field].isDecrypted) revert Errors.FieldNotDecrypted();
 
-        return decryptionCache[dataOwner][field].decryptedValue;
+        DataTypes.Profile storage profile = profiles[dataOwner];
+        euint64 fieldValue = _getFieldValue(profile, field);
+
+        return FHE.toBytes32(fieldValue);
     }
 
     /// @inheritdoc IIdentityRegistry

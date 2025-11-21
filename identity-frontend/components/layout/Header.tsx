@@ -25,7 +25,7 @@ export default function Header() {
           <Link href="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden">
               <Image
-                src="/logo.png"
+                src="/logo.svg"
                 alt="Logo"
                 width={32}
                 height={32}
@@ -33,10 +33,10 @@ export default function Header() {
               />
             </div>
             <span className="text-lg sm:text-xl font-bold text-gray-900 hidden sm:inline">
-              Confidential Fundraising
+              Confidential Identity
             </span>
             <span className="text-lg font-bold text-gray-900 sm:hidden">
-              {/* CF */}
+              {/* CI */}
             </span>
           </Link>
 
@@ -44,25 +44,25 @@ export default function Header() {
           <nav className="hidden lg:flex items-center space-x-6">
             <Link
               href="/"
-              className="text-gray-700 hover:text-purple-600 font-medium transition"
+              className="text-gray-700 hover:text-blue-600 font-medium transition"
             >
-              Campaigns
+              Profiles
             </Link>
             {authenticated && (
               <Link
-                href="/create"
-                className="text-gray-700 hover:text-purple-600 font-medium transition"
+                href="/profile/create"
+                className="text-gray-700 hover:text-blue-600 font-medium transition"
               >
-                Create Campaign
+                Create Profile
               </Link>
             )}
 
             {authenticated && (
               <Link
-                href="/vault"
-                className="text-gray-700 hover:text-purple-600 font-medium transition"
+                href="/dashboard"
+                className="text-gray-700 hover:text-blue-600 font-medium transition"
               >
-                My Vault
+                Dashboard
               </Link>
             )}
 
@@ -77,7 +77,7 @@ export default function Header() {
               {ready && !authenticated && (
                 <button
                   onClick={login}
-                  className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition font-medium"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium"
                 >
                   Connect Wallet
                 </button>
@@ -85,7 +85,7 @@ export default function Header() {
 
               {ready && authenticated && user && (
                 <div className="flex items-center space-x-3">
-                  <div className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg font-mono text-sm">
+                  <div className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-mono text-sm">
                     {user.wallet?.address && formatAddress(user.wallet.address)}
                   </div>
                   <button
@@ -103,7 +103,7 @@ export default function Header() {
           <div className="lg:hidden flex items-center space-x-3">
             {/* Mobile wallet status */}
             {ready && authenticated && user && (
-              <div className="bg-purple-100 text-purple-700 px-2 py-1 rounded-lg font-mono text-xs">
+              <div className="bg-blue-100 text-blue-700 px-2 py-1 rounded-lg font-mono text-xs">
                 {user.wallet?.address && formatAddress(user.wallet.address)}
               </div>
             )}
@@ -134,26 +134,26 @@ export default function Header() {
             <Link
               href="/"
               onClick={closeMobileMenu}
-              className="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-lg font-medium transition"
+              className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition"
             >
-              Campaigns
+              Profiles
             </Link>
 
             {authenticated && (
               <>
                 <Link
-                  href="/create"
+                  href="/profile/create"
                   onClick={closeMobileMenu}
-                  className="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-lg font-medium transition"
+                  className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition"
                 >
-                  Create Campaign
+                  Create Profile
                 </Link>
                 <Link
-                  href="/vault"
+                  href="/dashboard"
                   onClick={closeMobileMenu}
-                  className="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-lg font-medium transition"
+                  className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition"
                 >
-                  My Vault
+                  Dashboard
                 </Link>
               </>
             )}
@@ -161,7 +161,7 @@ export default function Header() {
             <div className="pt-3 border-t border-gray-200">
               {!ready && (
                 <div className="flex items-center justify-center space-x-2 py-2">
-                  <div className="animate-spin h-5 w-5 border-2 border-purple-600 border-t-transparent rounded-full"></div>
+                  <div className="animate-spin h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full"></div>
                   <span className="text-sm text-gray-600">Loading...</span>
                 </div>
               )}
@@ -172,7 +172,7 @@ export default function Header() {
                     login();
                     closeMobileMenu();
                   }}
-                  className="w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition font-medium"
+                  className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium"
                 >
                   Connect Wallet
                 </button>
