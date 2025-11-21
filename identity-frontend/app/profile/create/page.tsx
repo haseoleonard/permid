@@ -20,6 +20,8 @@ export default function CreateProfilePage() {
     country: '',
   });
 
+  const MAX_TEXT_LENGTH = 8; // uint64 supports up to 8 characters
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -27,8 +29,28 @@ export default function CreateProfilePage() {
     });
   };
 
+  const getFieldError = (field: string, value: string): string | null => {
+    if (['name', 'email', 'idNumber', 'location', 'country'].includes(field)) {
+      if (value.length > MAX_TEXT_LENGTH) {
+        return `Max ${MAX_TEXT_LENGTH} characters (current: ${value.length})`;
+      }
+    }
+    return null;
+  };
+
+  const hasValidationErrors = (): boolean => {
+    return ['name', 'email', 'idNumber', 'location', 'country'].some(
+      field => formData[field as keyof typeof formData].length > MAX_TEXT_LENGTH
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (hasValidationErrors()) {
+      showSnackbar('Please fix validation errors before submitting', 'error');
+      return;
+    }
 
     try {
       await createProfile(formData);
@@ -55,35 +77,43 @@ export default function CreateProfilePage() {
             {/* Name */}
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                Full Name
+                Full Name <span className="text-gray-400 text-xs">(max 8 chars)</span>
               </label>
               <input
                 type="text"
                 id="name"
                 name="name"
                 required
+                maxLength={MAX_TEXT_LENGTH}
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="John Doe"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${getFieldError('name', formData.name) ? 'border-red-500' : 'border-gray-300'}`}
+                placeholder="JohnDoe"
               />
+              {getFieldError('name', formData.name) && (
+                <p className="text-red-500 text-xs mt-1">{getFieldError('name', formData.name)}</p>
+              )}
             </div>
 
             {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
+                Email/Username <span className="text-gray-400 text-xs">(max 8 chars)</span>
               </label>
               <input
-                type="email"
+                type="text"
                 id="email"
                 name="email"
                 required
+                maxLength={MAX_TEXT_LENGTH}
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="john@example.com"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${getFieldError('email', formData.email) ? 'border-red-500' : 'border-gray-300'}`}
+                placeholder="john123"
               />
+              {getFieldError('email', formData.email) && (
+                <p className="text-red-500 text-xs mt-1">{getFieldError('email', formData.email)}</p>
+              )}
             </div>
 
             {/* Date of Birth */}
@@ -105,52 +135,64 @@ export default function CreateProfilePage() {
             {/* ID Number */}
             <div>
               <label htmlFor="idNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                ID Number
+                ID Number <span className="text-gray-400 text-xs">(max 8 chars)</span>
               </label>
               <input
                 type="text"
                 id="idNumber"
                 name="idNumber"
                 required
+                maxLength={MAX_TEXT_LENGTH}
                 value={formData.idNumber}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="123456789"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${getFieldError('idNumber', formData.idNumber) ? 'border-red-500' : 'border-gray-300'}`}
+                placeholder="12345678"
               />
+              {getFieldError('idNumber', formData.idNumber) && (
+                <p className="text-red-500 text-xs mt-1">{getFieldError('idNumber', formData.idNumber)}</p>
+              )}
             </div>
 
             {/* Location */}
             <div>
               <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-                Location
+                Location <span className="text-gray-400 text-xs">(max 8 chars)</span>
               </label>
               <input
                 type="text"
                 id="location"
                 name="location"
                 required
+                maxLength={MAX_TEXT_LENGTH}
                 value={formData.location}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="City, Country"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${getFieldError('location', formData.location) ? 'border-red-500' : 'border-gray-300'}`}
+                placeholder="NYC"
               />
+              {getFieldError('location', formData.location) && (
+                <p className="text-red-500 text-xs mt-1">{getFieldError('location', formData.location)}</p>
+              )}
             </div>
 
             {/* Country */}
             <div>
               <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-2">
-                Country
+                Country <span className="text-gray-400 text-xs">(max 8 chars)</span>
               </label>
               <input
                 type="text"
                 id="country"
                 name="country"
                 required
+                maxLength={MAX_TEXT_LENGTH}
                 value={formData.country}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="United States"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${getFieldError('country', formData.country) ? 'border-red-500' : 'border-gray-300'}`}
+                placeholder="USA"
               />
+              {getFieldError('country', formData.country) && (
+                <p className="text-red-500 text-xs mt-1">{getFieldError('country', formData.country)}</p>
+              )}
             </div>
 
             {/* Experience */}

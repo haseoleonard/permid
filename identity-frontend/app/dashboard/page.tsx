@@ -22,7 +22,7 @@ export default function DashboardPage() {
   } = useIdentity();
   const { showSnackbar } = useSnackbar();
 
-  const [pendingRequests, setPendingRequests] = useState<string[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<{ address: string; message: string }[]>([]);
   const [grantedRequests, setGrantedRequests] = useState<string[]>([]);
   const [outgoingRequests, setOutgoingRequests] = useState<string[]>([]);
   const [outgoingStatuses, setOutgoingStatuses] = useState<Record<string, { pending: boolean; granted: boolean }>>({});
@@ -46,7 +46,7 @@ export default function DashboardPage() {
       if (!myAddress) return;
 
       // Separate pending and granted requests
-      const pending: string[] = [];
+      const pending: { address: string; message: string }[] = [];
       const granted: Record<string, DataField[]> = {};
       const grantedAddresses: string[] = [];
 
@@ -67,12 +67,12 @@ export default function DashboardPage() {
               grantedAddresses.push(requester);
             }
           } else if (status.pending) {
-            pending.push(requester);
+            pending.push({ address: requester, message: status.message || '' });
           }
         } catch (error) {
           console.log(`Could not load request status for ${requester}`);
           // If we can't get status, assume pending
-          pending.push(requester);
+          pending.push({ address: requester, message: '' });
         }
       }
 
@@ -233,14 +233,21 @@ export default function DashboardPage() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {pendingRequests.map((requester) => (
-                    <div key={requester} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      {pendingRequests.map((request) => (
+                    <div key={request.address} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                       <div className="flex items-start justify-between mb-4">
                         <div>
                           <h3 className="font-medium text-gray-900">Request from</h3>
-                          <p className="text-sm text-gray-600 font-mono mt-1">{requester}</p>
+                          <p className="text-sm text-gray-600 font-mono mt-1">{request.address}</p>
                         </div>
                       </div>
+
+                      {request.message && (
+                        <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <p className="text-xs text-blue-600 font-medium mb-1">Message:</p>
+                          <p className="text-sm text-blue-800">{request.message}</p>
+                        </div>
+                      )}
 
                       <div className="mb-4">
                         <p className="text-sm font-medium text-gray-700 mb-2">Select fields to share:</p>
@@ -252,8 +259,8 @@ export default function DashboardPage() {
                             >
                               <input
                                 type="checkbox"
-                                checked={selectedFields[requester]?.includes(field) || false}
-                                onChange={() => toggleField(requester, field)}
+                                checked={selectedFields[request.address]?.includes(field) || false}
+                                onChange={() => toggleField(request.address, field)}
                                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                               />
                               <span className="text-sm text-gray-700">{FIELD_LABELS[field]}</span>
@@ -264,14 +271,14 @@ export default function DashboardPage() {
 
                       <div className="flex gap-2">
                         <button
-                          onClick={() => handleGrantAccess(requester)}
-                          disabled={loading || !selectedFields[requester]?.length}
+                          onClick={() => handleGrantAccess(request.address)}
+                          disabled={loading || !selectedFields[request.address]?.length}
                           className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Grant Access
                         </button>
                         <button
-                          onClick={() => handleRevokeAccess(requester)}
+                          onClick={() => handleRevokeAccess(request.address)}
                           disabled={loading}
                           className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition disabled:opacity-50"
                         >
