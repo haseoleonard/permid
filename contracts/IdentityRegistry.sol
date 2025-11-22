@@ -200,14 +200,32 @@ contract IdentityRegistry is IIdentityRegistry, ZamaEthereumConfig, IdentityStor
 
     /// @inheritdoc IIdentityRegistry
     function revokeAccess(address requester) external onlyProfileOwner {
-        accessRequests[msg.sender][requester].granted = false;
+        // Fully reset the access request so requester can request again
+        delete accessRequests[msg.sender][requester];
 
         // Revoke all field access
         for (uint i = 0; i < 7; i++) {
             fieldAccess[msg.sender][requester][DataTypes.DataField(i)] = false;
         }
 
+        // Remove from incoming/outgoing arrays
+        _removeFromArray(incomingRequests[msg.sender], requester);
+        _removeFromArray(outgoingRequests[requester], msg.sender);
+
         emit AccessRevoked(msg.sender, requester);
+    }
+
+    /**
+     * @dev Remove an address from an array (helper function)
+     */
+    function _removeFromArray(address[] storage arr, address toRemove) internal {
+        for (uint i = 0; i < arr.length; i++) {
+            if (arr[i] == toRemove) {
+                arr[i] = arr[arr.length - 1];
+                arr.pop();
+                break;
+            }
+        }
     }
 
     // ============================================
