@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useIdentity } from '../hooks/useIdentity';
 import Link from 'next/link';
@@ -12,21 +12,22 @@ export default function Home() {
   const [profiles, setProfiles] = useState<string[]>([]);
   const [loadingProfiles, setLoadingProfiles] = useState(true);
 
-  const loadProfiles = useCallback(async () => {
-    try {
-      setLoadingProfiles(true);
-      const owners = await getAllProfiles();
-      setProfiles([...owners]);
-    } catch (error) {
-      console.error('Error loading profiles:', error);
-    } finally {
-      setLoadingProfiles(false);
-    }
-  }, [getAllProfiles]);
-
   useEffect(() => {
+    const loadProfiles = async () => {
+      try {
+        setLoadingProfiles(true);
+        const owners = await getAllProfiles();
+        setProfiles([...owners]);
+      } catch (error) {
+        console.error('Error loading profiles:', error);
+      } finally {
+        setLoadingProfiles(false);
+      }
+    };
+
     loadProfiles();
-  }, [loadProfiles]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">

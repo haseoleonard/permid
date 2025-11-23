@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
 import { useIdentity } from '@/hooks/useIdentity';
@@ -29,7 +29,7 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<'incoming' | 'outgoing'>('incoming');
   const [grantedUsers, setGrantedUsers] = useState<Record<string, DataField[]>>({});
 
-  const loadRequests = useCallback(async () => {
+  const loadRequests = async () => {
     try {
       const incoming = await getMyIncomingRequests();
       const outgoing = await getMyOutgoingRequests();
@@ -97,13 +97,14 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Error loading requests:', error);
     }
-  }, [user, getMyIncomingRequests, getMyOutgoingRequests, getAccessRequestStatus, getGrantedFields]);
+  };
 
   useEffect(() => {
     if (user?.wallet?.address) {
       loadRequests();
     }
-  }, [user, loadRequests]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.wallet?.address]);
 
   const toggleField = (requester: string, field: DataField) => {
     setSelectedFields(prev => {

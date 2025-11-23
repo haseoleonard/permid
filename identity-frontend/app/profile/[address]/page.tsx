@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
 import { useIdentity } from '@/hooks/useIdentity';
@@ -35,7 +35,7 @@ export default function ProfileDetailPage() {
   }>({ exists: false, pending: false, granted: false, message: '' });
   const [message, setMessage] = useState('');
 
-  const loadProfileData = useCallback(async () => {
+  const loadProfileData = async () => {
     try {
       // Check if profile exists
       const profileExists = await checkHasProfile(profileAddress);
@@ -98,11 +98,12 @@ export default function ProfileDetailPage() {
     } catch (error) {
       console.error('Error loading profile data:', error);
     }
-  }, [profileAddress, user, authenticated, checkHasProfile, getAccessRequestStatus, getGrantedFields, getAndDecryptField]);
+  };
 
   useEffect(() => {
     loadProfileData();
-  }, [loadProfileData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profileAddress, user?.wallet?.address]);
 
   const handleRequestAccess = async () => {
     if (!message.trim()) {
