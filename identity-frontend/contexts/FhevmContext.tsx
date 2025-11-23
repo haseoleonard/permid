@@ -37,7 +37,7 @@ export const FhevmProvider = ({ children }: FhevmProviderProps) => {
       try {
         console.log('🔄 Calling initializeFhevm...');
         const fhevmInstance = await initializeFhevm();
-        setInstance(fhevmInstance);
+        setInstance(fhevmInstance as FhevmInstance);
         console.log('✅ FHEVM instance set in context');
       } catch (err) {
         console.error('❌ Failed to initialize FHEVM in context:', err);

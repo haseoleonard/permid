@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
 import { useIdentity } from '@/hooks/useIdentity';
@@ -11,7 +11,6 @@ export default function DashboardPage() {
   const router = useRouter();
   const { user } = usePrivy();
   const {
-    hasProfile,
     getMyIncomingRequests,
     getMyOutgoingRequests,
     grantAccess,
@@ -30,17 +29,11 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<'incoming' | 'outgoing'>('incoming');
   const [grantedUsers, setGrantedUsers] = useState<Record<string, DataField[]>>({});
 
-  useEffect(() => {
-    if (user?.wallet?.address) {
-      loadRequests();
-    }
-  }, [user]);
-
-  const loadRequests = async () => {
+  const loadRequests = useCallback(async () => {
     try {
       const incoming = await getMyIncomingRequests();
       const outgoing = await getMyOutgoingRequests();
-      setOutgoingRequests(outgoing);
+      setOutgoingRequests([...outgoing]);
 
       const myAddress = user?.wallet?.address;
       if (!myAddress) return;
@@ -59,7 +52,7 @@ export default function DashboardPage() {
             // Load granted fields
             const fields = await getGrantedFields(myAddress, requester);
             const grantedFieldsList = Object.entries(fields)
-              .filter(([_, isGranted]) => isGranted)
+              .filter(([, isGranted]) => isGranted)
               .map(([field]) => parseInt(field) as DataField);
 
             if (grantedFieldsList.length > 0) {
@@ -69,7 +62,7 @@ export default function DashboardPage() {
           } else if (status.pending) {
             pending.push({ address: requester, message: status.message || '' });
           }
-        } catch (error) {
+        } catch {
           console.log(`Could not load request status for ${requester}`);
           // If we can't get status, assume pending
           pending.push({ address: requester, message: '' });
@@ -104,7 +97,13 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Error loading requests:', error);
     }
-  };
+  }, [user, getMyIncomingRequests, getMyOutgoingRequests, getAccessRequestStatus, getGrantedFields]);
+
+  useEffect(() => {
+    if (user?.wallet?.address) {
+      loadRequests();
+    }
+  }, [user, loadRequests]);
 
   const toggleField = (requester: string, field: DataField) => {
     setSelectedFields(prev => {
@@ -350,7 +349,7 @@ export default function DashboardPage() {
                     </svg>
                     <h3 className="mt-2 text-sm font-medium text-gray-900">No outgoing requests</h3>
                     <p className="mt-1 text-sm text-gray-500">
-                      Browse profiles to request access to someone's data.
+                      Browse profiles to request access to someone&apos;s data.
                     </p>
                     <button
                       onClick={() => router.push('/')}

@@ -1,35 +1,32 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, useCallback } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useIdentity } from '../hooks/useIdentity';
 import Link from 'next/link';
 
 export default function Home() {
-  const router = useRouter();
   const { authenticated, login } = usePrivy();
-  const { getAllProfiles, hasProfile: checkHasProfile, loading } = useIdentity();
+  const { getAllProfiles } = useIdentity();
 
   const [profiles, setProfiles] = useState<string[]>([]);
-  const [userHasProfile, setUserHasProfile] = useState(false);
   const [loadingProfiles, setLoadingProfiles] = useState(true);
 
-  useEffect(() => {
-    loadProfiles();
-  }, []);
-
-  const loadProfiles = async () => {
+  const loadProfiles = useCallback(async () => {
     try {
       setLoadingProfiles(true);
       const owners = await getAllProfiles();
-      setProfiles(owners);
+      setProfiles([...owners]);
     } catch (error) {
       console.error('Error loading profiles:', error);
     } finally {
       setLoadingProfiles(false);
     }
-  };
+  }, [getAllProfiles]);
+
+  useEffect(() => {
+    loadProfiles();
+  }, [loadProfiles]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">

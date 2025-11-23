@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
 import { useIdentity } from '@/hooks/useIdentity';
@@ -26,7 +26,7 @@ export default function ProfileDetailPage() {
   const [exists, setExists] = useState(false);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [grantedFields, setGrantedFields] = useState<FieldAccessMap>({} as FieldAccessMap);
-  const [sharedData, setSharedData] = useState<Record<DataField, string>>({} as any);
+  const [sharedData, setSharedData] = useState<Record<DataField, string>>({} as Record<DataField, string>);
   const [requestStatus, setRequestStatus] = useState<{
     exists: boolean;
     pending: boolean;
@@ -35,11 +35,7 @@ export default function ProfileDetailPage() {
   }>({ exists: false, pending: false, granted: false, message: '' });
   const [message, setMessage] = useState('');
 
-  useEffect(() => {
-    loadProfileData();
-  }, [profileAddress, user]);
-
-  const loadProfileData = async () => {
+  const loadProfileData = useCallback(async () => {
     try {
       // Check if profile exists
       const profileExists = await checkHasProfile(profileAddress);
@@ -63,7 +59,7 @@ export default function ProfileDetailPage() {
           setGrantedFields(fields);
 
           // Load shared field values with client-side decryption
-          const data: Record<DataField, string> = {} as any;
+          const data: Record<DataField, string> = {} as Record<DataField, string>;
           const fieldIds = [
             DataField.EMAIL,
             DataField.DOB,
@@ -102,7 +98,11 @@ export default function ProfileDetailPage() {
     } catch (error) {
       console.error('Error loading profile data:', error);
     }
-  };
+  }, [profileAddress, user, authenticated, checkHasProfile, getAccessRequestStatus, getGrantedFields, getAndDecryptField]);
+
+  useEffect(() => {
+    loadProfileData();
+  }, [loadProfileData]);
 
   const handleRequestAccess = async () => {
     if (!message.trim()) {
@@ -211,7 +211,7 @@ export default function ProfileDetailPage() {
               </p>
               {requestStatus.message && (
                 <p className="text-sm text-blue-600 mt-2">
-                  Your message: "{requestStatus.message}"
+                  Your message: &quot;{requestStatus.message}&quot;
                 </p>
               )}
             </div>

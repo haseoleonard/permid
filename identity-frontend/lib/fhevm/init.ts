@@ -3,7 +3,7 @@ const SDK_LOAD_TIMEOUT = 30000;
 const RELAYER_SDK_GLOBAL_KEY = 'relayerSDK';
 
 // State management
-let fhevmInstance: any | null = null;
+let fhevmInstance: unknown | null = null;
 let isSDKLoaded = false;
 let isSDKInitialized = false;
 let loadingPromise: Promise<void> | null = null;
@@ -20,13 +20,13 @@ async function loadRelayerSDK(): Promise<void> {
     return loadingPromise;
   }
 
-  if (isSDKLoaded && (window as any)[RELAYER_SDK_GLOBAL_KEY]) {
+  if (isSDKLoaded && (window as unknown as Record<string, unknown>)[RELAYER_SDK_GLOBAL_KEY]) {
     return Promise.resolve();
   }
 
   loadingPromise = new Promise((resolve, reject) => {
     const existingScript = document.querySelector(`script[src="${ZAMA_SDK_CDN_URL}"]`);
-    if (existingScript && (window as any)[RELAYER_SDK_GLOBAL_KEY]) {
+    if (existingScript && (window as unknown as Record<string, unknown>)[RELAYER_SDK_GLOBAL_KEY]) {
       isSDKLoaded = true;
       resolve();
       return;
@@ -43,7 +43,7 @@ async function loadRelayerSDK(): Promise<void> {
 
     script.onload = () => {
       clearTimeout(timeoutId);
-      if ((window as any)[RELAYER_SDK_GLOBAL_KEY]) {
+      if ((window as unknown as Record<string, unknown>)[RELAYER_SDK_GLOBAL_KEY]) {
         isSDKLoaded = true;
         console.log('✅ RelayerSDK loaded from CDN');
         resolve();
@@ -67,7 +67,7 @@ async function loadRelayerSDK(): Promise<void> {
  * Initialize the RelayerSDK
  */
 async function initializeRelayerSDK(): Promise<void> {
-  const relayerSDK = (window as any)[RELAYER_SDK_GLOBAL_KEY];
+  const relayerSDK = (window as unknown as Record<string, unknown>)[RELAYER_SDK_GLOBAL_KEY] as Record<string, unknown>;
   if (!relayerSDK) {
     throw new Error('RelayerSDK not loaded. Call loadRelayerSDK() first.');
   }
@@ -78,13 +78,13 @@ async function initializeRelayerSDK(): Promise<void> {
 
   try {
     console.log('🔄 Initializing RelayerSDK...');
-    const initResult = await relayerSDK.initSDK();
+    const initResult = await (relayerSDK as Record<string, CallableFunction>).initSDK();
     
     if (!initResult) {
       throw new Error('RelayerSDK initialization returned false');
     }
 
-    relayerSDK.__initialized__ = true;
+    (relayerSDK as Record<string, unknown>).__initialized__ = true;
     isSDKInitialized = true;
     console.log('✅ RelayerSDK initialized');
   } catch (error) {
@@ -95,19 +95,19 @@ async function initializeRelayerSDK(): Promise<void> {
 /**
  * Get SDK network configuration
  */
-function getSDKNetworkConfig(relayerSDK: any, chainId: number): any {
+function getSDKNetworkConfig(relayerSDK: Record<string, unknown>, chainId: number): Record<string, unknown> {
   switch (chainId) {
     case 11155111: // Sepolia
       if (!relayerSDK.SepoliaConfig) {
         throw new Error('Sepolia configuration not available in SDK');
       }
-      return relayerSDK.SepoliaConfig;
+      return relayerSDK.SepoliaConfig as Record<string, unknown>;
 
     case 8009: // Zama Devnet
       if (!relayerSDK.DevnetConfig) {
         throw new Error('Devnet configuration not available in SDK');
       }
-      return relayerSDK.DevnetConfig;
+      return relayerSDK.DevnetConfig as Record<string, unknown>;
 
     default:
       throw new Error(`No SDK configuration available for chain ID ${chainId}`);
@@ -118,15 +118,15 @@ function getSDKNetworkConfig(relayerSDK: any, chainId: number): any {
  * Setup global polyfill
  */
 function setupGlobalPolyfill(): void {
-  if (typeof (globalThis as any).global === 'undefined') {
-    (globalThis as any).global = globalThis;
+  if (typeof (globalThis as unknown as Record<string, unknown>).global === 'undefined') {
+    (globalThis as unknown as Record<string, unknown>).global = globalThis;
   }
 }
 
 /**
  * Main initialization function
  */
-export async function initializeFhevm(): Promise<any> {
+export async function initializeFhevm(): Promise<unknown> {
   if (typeof window === 'undefined') {
     throw new Error('FHEVM can only be initialized in browser environment');
   }
@@ -152,11 +152,11 @@ export async function initializeFhevm(): Promise<any> {
     await initializeRelayerSDK();
 
     // Get SDK instance
-    const relayerSDK = (window as any)[RELAYER_SDK_GLOBAL_KEY];
+    const relayerSDK = (window as unknown as Record<string, unknown>)[RELAYER_SDK_GLOBAL_KEY] as Record<string, unknown>;
     
     // Get network config from SDK
     console.log('🌐 Getting network configuration from SDK...');
-    const sdkNetworkConfig = getSDKNetworkConfig(relayerSDK, chainId);
+    const sdkNetworkConfig = getSDKNetworkConfig(relayerSDK, chainId) as Record<string, unknown>;
 
     sdkNetworkConfig.network='https://ethereum-sepolia-rpc.publicnode.com'
     
@@ -166,7 +166,7 @@ export async function initializeFhevm(): Promise<any> {
 
     // Create FHEVM instance
     console.log('🔨 Creating FHEVM instance...');
-    const instance = await relayerSDK.createInstance(sdkNetworkConfig);
+    const instance = await (relayerSDK as Record<string, CallableFunction>).createInstance(sdkNetworkConfig);
 
     // Cache the instance
     fhevmInstance = {
@@ -191,11 +191,11 @@ export async function initializeFhevm(): Promise<any> {
 /**
  * Get FHEVM instance
  */
-export function getFhevmInstance(): any {
+export function getFhevmInstance(): unknown {
   if (!fhevmInstance) {
     throw new Error('FHEVM not initialized. Call initializeFhevm() first.');
   }
   return fhevmInstance;
 }
 
-export type FhevmInstance = any;
+export type FhevmInstance = unknown;
