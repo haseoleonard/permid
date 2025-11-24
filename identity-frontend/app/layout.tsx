@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   title: 'Permid - Privacy-Preserving Identity Management',
   description: 'Manage your personal data privately with selective sharing powered by FHEVM',
   keywords: ['FHEVM', 'Privacy', 'Identity', 'Blockchain', 'Encryption', 'Data Protection', 'Permid'],
+  icons: {
+    icon: 'logo.png',
+  },
 };
 
 export default function RootLayout({
