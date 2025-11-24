@@ -154,32 +154,9 @@ export default function ProfileDetailPage() {
   }
 
   if (isOwnProfile) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Your Profile</h1>
-            <p className="text-gray-600 mb-6">
-              This is your own profile. Visit the dashboard to manage access requests.
-            </p>
-            <div className="flex gap-4">
-              <button
-                onClick={() => router.push('/')}
-                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
-              >
-                Back to Profiles
-              </button>
-              <button
-                onClick={() => router.push('/dashboard')}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-              >
-                Go to Dashboard
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    // Redirect to My Profile page
+    router.push('/my-profile');
+    return null;
   }
 
   return (

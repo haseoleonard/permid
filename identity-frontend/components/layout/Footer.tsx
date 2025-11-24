@@ -19,7 +19,7 @@ export default function Footer() {
           </p>
           <div className="mt-4 flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-0 sm:space-x-6 text-xs text-gray-500">
             <a
-              href="https://github.com/cris-the-dev/confidental-fundraising/blob/main/README.md"
+              href="https://github.com/haseoleonard/permid/blob/main/README.md"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-purple-600 transition"
@@ -28,7 +28,7 @@ export default function Footer() {
             </a>
             <span className="hidden sm:inline">•</span>
             <a
-              href="https://github.com/cris-the-dev/confidental-fundraising"
+              href="https://github.com/haseoleonard/permid"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-purple-600 transition"
@@ -39,12 +39,12 @@ export default function Footer() {
             <span className="text-center">
               Built with ❤️ by{' '}
               <a
-                href="https://x.com/cris_thedev"
+                href="https://x.com/Sei_myname150"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-purple-600 transition"
               >
-                @cris_thedev
+                @Sei_myname150
               </a>
               {' '}using FHEVM
             </span>

@@ -33,10 +33,10 @@ export default function Header() {
               />
             </div>
             <span className="text-lg sm:text-xl font-bold text-gray-900 hidden sm:inline">
-              Confidential Identity
+              Permid
             </span>
             <span className="text-lg font-bold text-gray-900 sm:hidden">
-              {/* CI */}
+              Permid
             </span>
           </Link>
 
@@ -48,6 +48,14 @@ export default function Header() {
             >
               Profiles
             </Link>
+            {authenticated && (
+              <Link
+                href="/my-profile"
+                className="text-gray-700 hover:text-blue-600 font-medium transition"
+              >
+                My Profile
+              </Link>
+            )}
             {authenticated && (
               <Link
                 href="/profile/create"
@@ -141,6 +149,13 @@ export default function Header() {
 
             {authenticated && (
               <>
+                <Link
+                  href="/my-profile"
+                  onClick={closeMobileMenu}
+                  className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition"
+                >
+                  My Profile
+                </Link>
                 <Link
                   href="/profile/create"
                   onClick={closeMobileMenu}

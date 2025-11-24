@@ -268,6 +268,36 @@ export function useIdentity() {
     [isInitialized, wallet, publicClient, getWalletClient, decrypt]
   );
 
+  /**
+   * Get and decrypt your own field (uses getMyProfile, no ACL check needed)
+   */
+  const getAndDecryptMyField = useCallback(
+    async (field: DataField): Promise<bigint> => {
+      if (!isInitialized) throw new Error('FHEVM not initialized');
+      if (!wallet) throw new Error('Wallet not connected');
+
+      const client = await getWalletClient();
+
+      // Get all your profile handles (no ACL check required for own profile)
+      const profileHandles = await publicClient.readContract({
+        address: IDENTITY_REGISTRY_ADDRESS,
+        abi: IDENTITY_REGISTRY_ABI,
+        functionName: 'getMyProfile',
+        account: client.account,
+      });
+
+      // Map field to handle index
+      const fieldIndex = field; // DataField enum values are 0-6
+      const encryptedHandle = profileHandles[fieldIndex];
+
+      // Decrypt client-side
+      const decryptedValue = await decrypt(encryptedHandle as string, IDENTITY_REGISTRY_ADDRESS);
+
+      return decryptedValue;
+    },
+    [isInitialized, wallet, publicClient, getWalletClient, decrypt]
+  );
+
   // ============================================
   // QUERY FUNCTIONS
   // ============================================
@@ -299,6 +329,31 @@ export function useIdentity() {
     },
     [publicClient]
   );
+
+  /**
+   * Get my own profile (all encrypted field handles)
+   */
+  const getMyProfile = useCallback(async () => {
+    if (!wallet) throw new Error('Wallet not connected');
+
+    const client = await getWalletClient();
+    const result = await publicClient.readContract({
+      address: IDENTITY_REGISTRY_ADDRESS,
+      abi: IDENTITY_REGISTRY_ABI,
+      functionName: 'getMyProfile',
+      account: client.account,
+    });
+
+    return {
+      emailHandle: result[0],
+      dobHandle: result[1],
+      nameHandle: result[2],
+      idNumberHandle: result[3],
+      locationHandle: result[4],
+      experienceHandle: result[5],
+      countryHandle: result[6],
+    };
+  }, [wallet, getWalletClient, publicClient]);
 
   /**
    * Get incoming access requests
@@ -385,6 +440,7 @@ export function useIdentity() {
     createProfile,
     updateProfile,
     hasProfile,
+    getMyProfile,
 
     // Access management
     requestAccess,
@@ -393,6 +449,7 @@ export function useIdentity() {
 
     // Client-side decryption
     getAndDecryptField,
+    getAndDecryptMyField,
 
     // Queries
     getAllProfiles,

@@ -11,9 +11,9 @@ import PrivyProvider from '../contexts/PriviProvider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Confidential Identity - Privacy-Preserving Data Management',
+  title: 'Permid - Privacy-Preserving Identity Management',
   description: 'Manage your personal data privately with selective sharing powered by FHEVM',
-  keywords: ['FHEVM', 'Privacy', 'Identity', 'Blockchain', 'Encryption', 'Data Protection'],
+  keywords: ['FHEVM', 'Privacy', 'Identity', 'Blockchain', 'Encryption', 'Data Protection', 'Permid'],
 };
 
 export default function RootLayout({
