@@ -2,8 +2,6 @@
 
 import { useState, useCallback } from "react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
-import { createWalletClient, custom } from "viem";
-import { sepolia } from "viem/chains";
 import { useFhevm } from "../contexts/FhevmContext";
 import { HandleContractPair } from "@zama-fhe/relayer-sdk/web";
 import { BrowserProvider } from 'ethers';
@@ -39,12 +37,6 @@ export const useDecrypt = () => {
         const provider = await wallet.getEthereumProvider();
         const ethersProvider = new BrowserProvider(provider);
 
-        const walletClient = createWalletClient({
-          account: userAddress as `0x${string}`,
-          chain: sepolia,
-          transport: custom(provider),
-        });
-
         console.log("🔐 Generating keypair...");
         const keypair = instance.generateKeypair();
 
@@ -66,7 +58,6 @@ export const useDecrypt = () => {
           durationDays
         );
 
-        (await ethersProvider.getSigner()).signTypedData
         const signature = await (await ethersProvider.getSigner()).signTypedData(
           eip712.domain,
           {
@@ -88,7 +79,7 @@ export const useDecrypt = () => {
 
         const decryptedValue = result[handle as keyof typeof result];
 
-        console.log("✅ Decryption successful:", decryptedValue);
+        console.log("Decryption successful:", decryptedValue);
 
         return BigInt(decryptedValue);
       } catch (err) {

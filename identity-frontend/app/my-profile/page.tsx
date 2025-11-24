@@ -25,6 +25,7 @@ export default function MyProfilePage() {
     hasProfile: checkHasProfile,
     getAndDecryptMyField,
     updateProfile,
+    revokeAllAccess,
     loading
   } = useIdentity();
   const { showSnackbar } = useSnackbar();
@@ -32,6 +33,7 @@ export default function MyProfilePage() {
   const [profileExists, setProfileExists] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
     email: '',
     dob: '',
@@ -99,6 +101,9 @@ export default function MyProfilePage() {
     try {
       setRevealingField(fieldKey);
 
+      // Small delay to let React render the loading state before heavy decryption
+      await new Promise(resolve => setTimeout(resolve, 0));
+
       // Map profile key to DataField enum
       const fieldMapping: Record<keyof ProfileData, DataField> = {
         email: DataField.EMAIL,
@@ -156,15 +161,36 @@ export default function MyProfilePage() {
   };
 
   const handleSave = async () => {
+    // Set local loading state IMMEDIATELY (synchronous)
+    setIsSaving(true);
+
     try {
+      // Small delay to let React render the loading state before heavy encryption
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Step 1: Update the profile
       await updateProfile(editedData);
       showSnackbar('Profile updated successfully!', 'success');
+
+      // Step 2: Revoke all granted access (since data has changed)
+      try {
+        const revokedCount = await revokeAllAccess();
+        if (revokedCount > 0) {
+          showSnackbar(`Revoked access from ${revokedCount} user(s) due to profile update`, 'info');
+        }
+      } catch (error) {
+        console.error('Error revoking access:', error);
+        showSnackbar('Profile updated but failed to revoke some access grants', 'warning');
+      }
+
       setProfileData(editedData);
       setRevealedFields(new Set()); // Clear revealed state after update
       setIsEditMode(false);
     } catch (error) {
       console.error('Error updating profile:', error);
       showSnackbar('Failed to update profile', 'error');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -274,17 +300,17 @@ export default function MyProfilePage() {
               <div className="flex gap-3">
                 <button
                   onClick={handleCancel}
-                  disabled={loading}
-                  className="px-6 py-3 bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300 transition font-semibold disabled:opacity-50"
+                  disabled={isSaving || loading}
+                  className="px-6 py-3 bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
-                  disabled={loading}
-                  className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-500 transition font-semibold disabled:opacity-50"
+                  disabled={isSaving || loading}
+                  className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-500 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? (
+                  {(isSaving || loading) ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       Saving...
@@ -303,10 +329,15 @@ export default function MyProfilePage() {
           </div>
 
           {isEditMode ? (
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-              <p className="text-sm text-blue-800">
-                <strong>ℹ️ Note:</strong> Your updated data will be encrypted and stored on-chain. This may take a moment and will require a transaction signature.
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+              <p className="text-sm text-amber-800 mb-2">
+                <strong>⚠️ Important:</strong> Updating your profile will automatically revoke all previously granted access.
               </p>
+              <ul className="text-xs text-amber-700 space-y-1 ml-4 list-disc">
+                <li>Your updated data will be encrypted and stored on-chain</li>
+                <li>All users with access to your old data will need to re-request access</li>
+                <li>This requires multiple transaction signatures (update + revocations)</li>
+              </ul>
             </div>
           ) : revealedFields.size === 0 ? (
             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6">

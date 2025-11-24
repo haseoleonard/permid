@@ -30,9 +30,6 @@ export function usePublicDecrypt() {
         );
       }
 
-      // Debug: Log available methods on instance
-      console.log("📊 Available instance methods:", Object.keys(instance).filter(k => typeof (instance as any)[k] === 'function'));
-
       if (!instance.publicDecrypt) {
         throw new Error("publicDecrypt method not available on FHEVM instance.");
       }
@@ -45,14 +42,14 @@ export function usePublicDecrypt() {
       // Based on docs: instance.publicDecrypt([handles])
       const result = await instance.publicDecrypt([handle]);
 
-      console.log("✅ publicDecrypt raw result:", result);
+      console.log("publicDecrypt raw result:", result);
 
       if (!result || typeof result !== 'object') {
         throw new Error("publicDecrypt returned invalid result");
       }
 
       // v0.9 SDK returns: { clearValues, abiEncodedClearValues, decryptionProof }
-      const { clearValues, abiEncodedClearValues, decryptionProof } = result;
+      const { clearValues, decryptionProof } = result;
 
       if (!clearValues) {
         throw new Error("clearValues not found in decryption result");
@@ -66,11 +63,6 @@ export function usePublicDecrypt() {
         console.error("❌ Looking for handle:", handle);
         throw new Error("Decryption failed: no value returned for handle");
       }
-
-      console.log("✅ Decryption successful!");
-      console.log("  - Cleartext:", decryptedValue.toString());
-      console.log("  - ABI Encoded:", abiEncodedClearValues);
-      console.log("  - Proof:", decryptionProof?.substring(0, 66) + '...');
 
       // Convert to bigint
       const cleartextBigInt =

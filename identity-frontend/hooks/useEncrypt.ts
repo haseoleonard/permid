@@ -110,8 +110,6 @@ export const useEncrypt = () => {
           throw new Error('Invalid encryption result: missing input proof');
         }
 
-        console.log('✅ Profile encryption successful');
-
         return {
           handles: encryptedInput.handles,
           inputProof: encryptedInput.inputProof,

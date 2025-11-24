@@ -25,7 +25,7 @@ export default function Header() {
           <Link href="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden">
               <Image
-                src="/logo.svg"
+                src="/logo.png"
                 alt="Logo"
                 width={32}
                 height={32}
@@ -44,14 +44,14 @@ export default function Header() {
           <nav className="hidden lg:flex items-center space-x-6">
             <Link
               href="/"
-              className="text-gray-700 hover:text-blue-600 font-medium transition"
+              className="text-gray-700 hover:text-emerald-600 font-medium transition"
             >
               Profiles
             </Link>
             {authenticated && (
               <Link
                 href="/my-profile"
-                className="text-gray-700 hover:text-blue-600 font-medium transition"
+                className="text-gray-700 hover:text-emerald-600 font-medium transition"
               >
                 My Profile
               </Link>
@@ -59,7 +59,7 @@ export default function Header() {
             {authenticated && (
               <Link
                 href="/profile/create"
-                className="text-gray-700 hover:text-blue-600 font-medium transition"
+                className="text-gray-700 hover:text-emerald-600 font-medium transition"
               >
                 Create Profile
               </Link>
@@ -68,7 +68,7 @@ export default function Header() {
             {authenticated && (
               <Link
                 href="/dashboard"
-                className="text-gray-700 hover:text-blue-600 font-medium transition"
+                className="text-gray-700 hover:text-emerald-600 font-medium transition"
               >
                 Dashboard
               </Link>
@@ -77,7 +77,7 @@ export default function Header() {
             <div className="flex items-center space-x-4">
               {!ready && (
                 <div className="flex items-center space-x-2">
-                  <div className="animate-spin h-5 w-5 border-2 border-purple-600 border-t-transparent rounded-full"></div>
+                  <div className="animate-spin h-5 w-5 border-2 border-emerald-600 border-t-transparent rounded-full"></div>
                   <span className="text-sm text-gray-600">Loading...</span>
                 </div>
               )}
@@ -85,7 +85,7 @@ export default function Header() {
               {ready && !authenticated && (
                 <button
                   onClick={login}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium"
+                  className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-500 transition font-medium shadow-sm"
                 >
                   Connect Wallet
                 </button>
@@ -93,12 +93,12 @@ export default function Header() {
 
               {ready && authenticated && user && (
                 <div className="flex items-center space-x-3">
-                  <div className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-mono text-sm">
+                  <div className="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-lg font-mono text-sm border border-emerald-200">
                     {user.wallet?.address && formatAddress(user.wallet.address)}
                   </div>
                   <button
                     onClick={logout}
-                    className="text-gray-700 hover:text-red-600 font-medium transition"
+                    className="text-gray-700 hover:text-slate-900 font-medium transition"
                   >
                     Disconnect
                   </button>
@@ -111,7 +111,7 @@ export default function Header() {
           <div className="lg:hidden flex items-center space-x-3">
             {/* Mobile wallet status */}
             {ready && authenticated && user && (
-              <div className="bg-blue-100 text-blue-700 px-2 py-1 rounded-lg font-mono text-xs">
+              <div className="bg-emerald-50 text-emerald-700 px-2 py-1 rounded-lg font-mono text-xs border border-emerald-200">
                 {user.wallet?.address && formatAddress(user.wallet.address)}
               </div>
             )}
@@ -142,7 +142,7 @@ export default function Header() {
             <Link
               href="/"
               onClick={closeMobileMenu}
-              className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition"
+              className="block px-4 py-2 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 rounded-lg font-medium transition"
             >
               Profiles
             </Link>
@@ -152,21 +152,21 @@ export default function Header() {
                 <Link
                   href="/my-profile"
                   onClick={closeMobileMenu}
-                  className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition"
+                  className="block px-4 py-2 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 rounded-lg font-medium transition"
                 >
                   My Profile
                 </Link>
                 <Link
                   href="/profile/create"
                   onClick={closeMobileMenu}
-                  className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition"
+                  className="block px-4 py-2 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 rounded-lg font-medium transition"
                 >
                   Create Profile
                 </Link>
                 <Link
                   href="/dashboard"
                   onClick={closeMobileMenu}
-                  className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition"
+                  className="block px-4 py-2 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 rounded-lg font-medium transition"
                 >
                   Dashboard
                 </Link>
@@ -176,7 +176,7 @@ export default function Header() {
             <div className="pt-3 border-t border-gray-200">
               {!ready && (
                 <div className="flex items-center justify-center space-x-2 py-2">
-                  <div className="animate-spin h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                  <div className="animate-spin h-5 w-5 border-2 border-emerald-600 border-t-transparent rounded-full"></div>
                   <span className="text-sm text-gray-600">Loading...</span>
                 </div>
               )}
@@ -187,7 +187,7 @@ export default function Header() {
                     login();
                     closeMobileMenu();
                   }}
-                  className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium"
+                  className="w-full bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-500 transition font-medium shadow-sm"
                 >
                   Connect Wallet
                 </button>
@@ -199,7 +199,7 @@ export default function Header() {
                     logout();
                     closeMobileMenu();
                   }}
-                  className="w-full bg-red-50 text-red-600 px-4 py-2 rounded-lg hover:bg-red-100 transition font-medium"
+                  className="w-full bg-slate-100 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-200 transition font-medium"
                 >
                   Disconnect Wallet
                 </button>

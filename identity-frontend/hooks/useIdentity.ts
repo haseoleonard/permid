@@ -237,6 +237,52 @@ export function useIdentity() {
     [wallet, getWalletClient, publicClient]
   );
 
+  /**
+   * Revoke access from all requesters (useful after profile update)
+   */
+  const revokeAllAccess = useCallback(
+    async () => {
+      if (!wallet) throw new Error('Wallet not connected');
+
+      setLoading(true);
+      try {
+        const client = await getWalletClient();
+
+        // Get all incoming requests
+        const requesters = await publicClient.readContract({
+          address: IDENTITY_REGISTRY_ADDRESS,
+          abi: IDENTITY_REGISTRY_ABI,
+          functionName: 'getMyIncomingRequests',
+          account: client.account,
+        });
+
+        const revokedCount = requesters.length;
+
+        // Revoke access from each requester
+        for (const requester of requesters) {
+          try {
+            const hash = await client.writeContract({
+              address: IDENTITY_REGISTRY_ADDRESS,
+              abi: IDENTITY_REGISTRY_ABI,
+              functionName: 'revokeAccess',
+              args: [requester as `0x${string}`],
+            });
+
+            await publicClient.waitForTransactionReceipt({ hash });
+          } catch (error) {
+            console.error(`Error revoking access from ${requester}:`, error);
+            // Continue with next requester even if one fails
+          }
+        }
+
+        return revokedCount;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [wallet, getWalletClient, publicClient]
+  );
+
   // ============================================
   // CLIENT-SIDE DECRYPTION (Reencryption approach)
   // ============================================
@@ -446,6 +492,7 @@ export function useIdentity() {
     requestAccess,
     grantAccess,
     revokeAccess,
+    revokeAllAccess,
 
     // Client-side decryption
     getAndDecryptField,

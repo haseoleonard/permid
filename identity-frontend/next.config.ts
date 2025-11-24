@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
+  // Specify the project root to avoid lockfile warnings
+  outputFileTracingRoot: path.join(__dirname, "."),
+
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
@@ -27,9 +31,6 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === 'production' ? {
       exclude: ['error', 'warn']
     } : false,
-  },
-  experimental: {
-    esmExternals: 'loose',
   },
 };
 
