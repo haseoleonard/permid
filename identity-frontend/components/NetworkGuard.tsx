@@ -58,6 +58,7 @@ export default function NetworkGuard() {
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: `0x${sepolia.id.toString(16)}` }],
         });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (switchError: any) {
         if (switchError.code === 4902) {
           await provider.request({
