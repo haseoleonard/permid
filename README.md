@@ -28,7 +28,6 @@ A fully encrypted, on-chain identity management system powered by Zama's FHEVM (
 - [Smart Contract Documentation](#smart-contract-documentation)
 - [Implementation Details](#implementation-details)
 - [Data Encoding Strategy](#data-encoding-strategy)
-- [Gas Optimization](#gas-optimization)
 - [Key Features](#key-features)
 - [Use Cases](#use-cases)
 - [Getting Started](#getting-started)
@@ -51,6 +50,7 @@ Permid is a privacy-preserving identity management platform that leverages Zama'
 - All personal data encrypted on-chain using FHEVM
 - Selective disclosure - share only specific fields with verified requesters
 - Granular permission management with instant revocation
+- Automatic access revocation on profile updates - ensures data integrity
 - Zero-knowledge architecture - no central authority can decrypt user data
 - Immutable on-chain audit trail with complete privacy
 
@@ -591,9 +591,9 @@ euint64 product = TFHE.mul(encrypted1, encrypted2);
 
 ### Contract Specification
 
-**Contract Address (Sepolia):** To be deployed
+**Contract Address (Sepolia):** `0x61a6D9B953b4AE67299FEAC62FeAa3506fd13Ca8`
 
-**Verified on Etherscan:** Link after verification
+**Verified on Etherscan:** [View on Etherscan](https://sepolia.etherscan.io/address/0x61a6D9B953b4AE67299FEAC62FeAa3506fd13Ca8)
 
 ### Data Structures
 
@@ -720,8 +720,6 @@ Creates a new profile for the caller.
 **Events:**
 - Emits `ProfileCreated`
 
-**Gas Cost:** ~50,000 gas
-
 **Example:**
 ```typescript
 await identityContract.createProfile();
@@ -748,8 +746,6 @@ Sets or updates an encrypted field in the caller's profile.
 
 **Events:**
 - Emits `FieldSet`
-
-**Gas Cost:** ~150,000 gas per field
 
 **Example:**
 ```typescript
@@ -786,7 +782,63 @@ Batch sets multiple fields in a single transaction.
 **Events:**
 - Emits `FieldSet` for each field
 
-**Gas Cost:** ~150,000 gas per field (more efficient than individual calls)
+##### updateProfile
+
+```solidity
+function updateProfile(
+    externalEuint64 encryptedEmail,
+    externalEuint64 encryptedDob,
+    externalEuint64 encryptedName,
+    externalEuint64 encryptedIdNumber,
+    externalEuint64 encryptedLocation,
+    externalEuint64 encryptedExperience,
+    externalEuint64 encryptedCountry,
+    bytes calldata inputProof
+) external
+```
+
+Updates all fields in the caller's profile with new encrypted values.
+
+**Parameters:**
+- `encryptedEmail` through `encryptedCountry`: FHEVM-encrypted data for all 7 fields
+- `inputProof`: Cryptographic proof for batch encryption
+
+**Requirements:**
+- Profile must exist
+- Must be called by profile owner
+
+**Automatic Access Revocation:**
+When a profile is updated, the smart contract **automatically revokes all previously granted access** to ensure users with old data permissions cannot decrypt the new data. This is handled atomically within the contract.
+
+**Events:**
+- Emits `ProfileUpdated`
+- Emits `AccessRevoked` for each requester who had access
+
+**Example:**
+```typescript
+// Encrypt all fields
+const encryptedFields = await encryptAllFields(profileData);
+
+// Update profile - revocation happens automatically
+await identityContract.updateProfile(
+  encryptedFields.email,
+  encryptedFields.dob,
+  encryptedFields.name,
+  encryptedFields.idNumber,
+  encryptedFields.location,
+  encryptedFields.experience,
+  encryptedFields.country,
+  inputProof
+);
+
+// All previous access grants are now revoked
+// Users must re-request access to view updated data
+```
+
+**Why Automatic Revocation?**
+- **Data Integrity**: Prevents users from accessing stale data after updates
+- **Atomic Operation**: Update + revoke in single transaction (cannot be bypassed)
+- **Security**: Enforced at contract level, not reliant on frontend logic
 
 #### Access Request Management
 
@@ -812,8 +864,6 @@ Requests access to another user's profile.
 
 **Events:**
 - Emits `AccessRequested`
-
-**Gas Cost:** ~100,000 gas
 
 **Example:**
 ```typescript
@@ -851,8 +901,6 @@ Grants a requester access to specific encrypted fields.
 **Events:**
 - Emits `AccessGranted`
 
-**Gas Cost:** ~150,000 gas per field
-
 **Example:**
 ```typescript
 await identityContract.grantAccess(
@@ -883,8 +931,6 @@ Revokes all access from a specific requester.
 
 **Events:**
 - Emits `AccessRevoked`
-
-**Gas Cost:** ~80,000 gas
 
 **Example:**
 ```typescript
@@ -1198,98 +1244,12 @@ function uint64ToNumber(value: bigint): number {
 
 ---
 
-## Gas Optimization
-
-### Gas Costs Analysis
-
-**Sepolia Testnet Measurements:**
-
-| Operation | Gas Used | USD Cost @ $2000 ETH, 20 Gwei |
-|-----------|----------|-------------------------------|
-| Create Profile | ~500,000 | $0.020 |
-| Set Single Field | ~150,000 | $0.006 |
-| Request Access | ~100,000 | $0.004 |
-| Grant Access (1 field) | ~150,000 | $0.006 |
-| Grant Access (5 fields) | ~450,000 | $0.018 |
-| Revoke Access | ~80,000 | $0.003 |
-| Get Field (view) | 0 (read-only) | $0.000 |
-
-### Optimization Techniques
-
-#### 1. Batch Operations
-
-```solidity
-// Bad: Multiple transactions
-function setEmail(bytes calldata enc) external { /* ... */ }
-function setName(bytes calldata enc) external { /* ... */ }
-function setDOB(bytes calldata enc) external { /* ... */ }
-
-// Good: Single batch transaction
-function setMultipleFields(
-    DataField[] calldata fields,
-    bytes[] calldata encryptedValues
-) external {
-    for (uint i = 0; i < fields.length; i++) {
-        euint64 encrypted = TFHE.asEuint64(encryptedValues[i]);
-        profiles[msg.sender].encryptedData[fields[i]] = encrypted;
-    }
-}
-```
-
-#### 2. Efficient Storage
-
-```solidity
-// Bad: Store redundant data
-struct AccessGrant {
-    address requester;
-    address owner;
-    bool granted;
-    uint256 timestamp;
-    DataField[] fields;  // Array in struct = expensive
-}
-
-// Good: Optimized nested mappings
-mapping(address => mapping(address => mapping(DataField => bool))) grantedAccess;
-```
-
-#### 3. View Functions
-
-```solidity
-// No gas cost for reading encrypted data
-function getField(address owner, DataField field)
-    external
-    view
-    returns (euint64)
-{
-    return profiles[owner].encryptedData[field];
-}
-```
-
-#### 4. Event Optimization
-
-```solidity
-// Use indexed parameters for filtering
-event AccessGranted(
-    address indexed owner,
-    address indexed requester,
-    DataField[] fields  // Non-indexed to save gas
-);
-```
-
-### Future Optimizations
-
-1. **L2 Deployment**: Deploy on Arbitrum/Optimism for 10-50x gas reduction
-2. **EIP-4844 Blob Data**: Store large encrypted data in blobs
-3. **State Diffs**: Only update changed fields
-4. **Merkle Trees**: Batch verify multiple access grants
-
----
-
 ## Key Features
 
 ### For Users (Profile Owners)
 
 - **Create Encrypted Profiles**: Store personal data encrypted on-chain
+- **Update with Automatic Revocation**: Profile updates automatically revoke all previous access grants
 - **Receive Access Requests**: See who wants access and why
 - **Granular Control**: Approve specific fields, not all-or-nothing
 - **Instant Revocation**: Remove access anytime
@@ -1427,7 +1387,7 @@ NEXT_PUBLIC_PRIVY_APP_ID=your_privy_app_id
 
 # Blockchain Configuration
 NEXT_PUBLIC_CHAIN_ID=11155111  # Sepolia
-NEXT_PUBLIC_CONTRACT_ADDRESS=0x...  # Deployed contract address
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x61a6D9B953b4AE67299FEAC62FeAa3506fd13Ca8
 
 # Optional: Analytics, etc.
 ```
@@ -1476,39 +1436,16 @@ npx hardhat verify --network sepolia DEPLOYED_ADDRESS
 | Sign Transaction | ~2-3s | User interaction |
 | Transaction Confirmation | ~15-30s | Sepolia block time |
 
-### Smart Contract Benchmarks
-
-**Gas Usage by Function:**
-
-```
-createProfile()                    500,000 gas
-setField() x1                      150,000 gas
-setField() x5 (batch)             450,000 gas
-requestAccess()                    100,000 gas
-grantAccess() x1 field            150,000 gas
-grantAccess() x5 fields           450,000 gas
-revokeAccess()                     80,000 gas
-getField() [view]                   0 gas
-getAllProfiles() [view]             0 gas
-```
-
-### Scalability Projections
+### Scalability
 
 **Current (Sepolia Testnet):**
-- Max profiles: Unlimited (gas permitting)
+- Max profiles: Unlimited
 - Max fields per profile: 7 (expandable)
-- Max concurrent requests: Limited by block gas limit
 - Throughput: ~2-3 TPS (Sepolia limitation)
 
-**Mainnet L1:**
-- Throughput: ~12-15 TPS
-- Cost: High ($20-50 per profile creation at 100 Gwei)
-
-**L2 (Optimism/Arbitrum):**
-- Throughput: ~2000-4000 TPS
-- Cost: 10-50x reduction ($1-5 per profile)
-
-**Future Optimizations:**
+**Future Scaling:**
+- **Mainnet L1**: ~12-15 TPS
+- **L2 (Optimism/Arbitrum)**: ~2000-4000 TPS
 - Rollup-specific optimizations
 - State channel for instant grants/revokes
 - ZK-SNARK proofs for batch operations
@@ -1519,10 +1456,11 @@ getAllProfiles() [view]             0 gas
 
 ### Phase 1: MVP (Current)
 - [x] Core FHEVM integration
-- [x] Basic profile creation
+- [x] Basic profile creation and updates
 - [x] Access request/grant system
 - [x] Client-side decryption
 - [x] Revocation mechanism
+- [x] Automatic access revocation on profile update
 - [x] Sepolia testnet deployment
 
 ### Phase 2: Enhanced Features
@@ -1563,14 +1501,10 @@ getAllProfiles() [view]             0 gas
 
 ### Current Status (Testnet)
 
-- **Smart Contract**: Deployed on Sepolia
+- **Smart Contract**: Deployed on Sepolia at `0x61a6D9B953b4AE67299FEAC62FeAa3506fd13Ca8`
 - **Profiles Created**: Testing phase
 - **Access Requests**: Functional
-- **Average Gas Cost**:
-  - Create Profile: ~500k gas
-  - Request Access: ~100k gas
-  - Grant Access: ~150k per field
-  - Revoke Access: ~80k gas
+- **Key Features**: Profile updates automatically revoke previous access grants
 
 ### Target Metrics (12 Months)
 
