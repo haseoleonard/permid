@@ -25,7 +25,6 @@ export default function MyProfilePage() {
     hasProfile: checkHasProfile,
     getAndDecryptMyField,
     updateProfile,
-    revokeAllAccess,
     loading
   } = useIdentity();
   const { showSnackbar } = useSnackbar();
@@ -168,20 +167,9 @@ export default function MyProfilePage() {
       // Small delay to let React render the loading state before heavy encryption
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      // Step 1: Update the profile
+      // Update the profile (access revocation handled automatically by contract)
       await updateProfile(editedData);
-      showSnackbar('Profile updated successfully!', 'success');
-
-      // Step 2: Revoke all granted access (since data has changed)
-      try {
-        const revokedCount = await revokeAllAccess();
-        if (revokedCount > 0) {
-          showSnackbar(`Revoked access from ${revokedCount} user(s) due to profile update`, 'info');
-        }
-      } catch (error) {
-        console.error('Error revoking access:', error);
-        showSnackbar('Profile updated but failed to revoke some access grants', 'warning');
-      }
+      showSnackbar('Profile updated successfully! All previous access grants have been revoked.', 'success');
 
       setProfileData(editedData);
       setRevealedFields(new Set()); // Clear revealed state after update
@@ -336,7 +324,7 @@ export default function MyProfilePage() {
               <ul className="text-xs text-amber-700 space-y-1 ml-4 list-disc">
                 <li>Your updated data will be encrypted and stored on-chain</li>
                 <li>All users with access to your old data will need to re-request access</li>
-                <li>This requires multiple transaction signatures (update + revocations)</li>
+                <li>Revocation is handled automatically by the smart contract in a single transaction</li>
               </ul>
             </div>
           ) : revealedFields.size === 0 ? (

@@ -1,7 +1,7 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  console.log("🚀 Deploying Confidential Identity contracts...");
+  console.log("🚀 Deploying Permid contracts...");
 
   const [deployer] = await ethers.getSigners();
   console.log("📝 Deploying with account:", deployer.address);

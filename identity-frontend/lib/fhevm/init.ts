@@ -45,7 +45,7 @@ async function loadRelayerSDK(): Promise<void> {
       clearTimeout(timeoutId);
       if ((window as unknown as Record<string, unknown>)[RELAYER_SDK_GLOBAL_KEY]) {
         isSDKLoaded = true;
-        console.log('✅ RelayerSDK loaded from CDN');
+        console.log('RelayerSDK loaded from CDN');
         resolve();
       } else {
         reject(new Error('SDK loaded but not available on window object'));
@@ -86,7 +86,6 @@ async function initializeRelayerSDK(): Promise<void> {
 
     (relayerSDK as Record<string, unknown>).__initialized__ = true;
     isSDKInitialized = true;
-    console.log('✅ RelayerSDK initialized');
   } catch (error) {
     throw new Error(`RelayerSDK initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -135,19 +134,14 @@ export async function initializeFhevm(): Promise<unknown> {
 
   // Return cached instance if already initialized
   if (fhevmInstance) {
-    console.log('✅ Using cached FHEVM instance');
     return fhevmInstance;
   }
 
   try {
-    console.log('🔐 Initializing FHEVM with RelayerSDK...');
-    console.log('  - Chain ID:', chainId);
-
     // Setup polyfill
     setupGlobalPolyfill();
 
     // Load and initialize SDK
-    console.log('📦 Loading RelayerSDK from CDN...');
     await loadRelayerSDK();
     await initializeRelayerSDK();
 
@@ -155,14 +149,9 @@ export async function initializeFhevm(): Promise<unknown> {
     const relayerSDK = (window as unknown as Record<string, unknown>)[RELAYER_SDK_GLOBAL_KEY] as Record<string, unknown>;
     
     // Get network config from SDK
-    console.log('🌐 Getting network configuration from SDK...');
     const sdkNetworkConfig = getSDKNetworkConfig(relayerSDK, chainId) as Record<string, unknown>;
 
-    sdkNetworkConfig.network='https://ethereum-sepolia-rpc.publicnode.com'
-    
-    console.log('📡 SDK Network Config:');
-    console.log('  - ACL Address:', sdkNetworkConfig.aclContractAddress);
-    console.log('  - KMS Address:', sdkNetworkConfig.kmsContractAddress);
+    sdkNetworkConfig.network='https://ethereum-sepolia-rpc.publicnode.com';
 
     // Create FHEVM instance
     console.log('🔨 Creating FHEVM instance...');
@@ -178,8 +167,6 @@ export async function initializeFhevm(): Promise<unknown> {
         gatewayUrl: sdkNetworkConfig.gatewayUrl,
       }
     };
-
-    console.log('✅ FHEVM initialized successfully');
     return fhevmInstance;
   } catch (error) {
     console.error('❌ FHEVM initialization failed:', error);

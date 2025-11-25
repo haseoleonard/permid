@@ -6,6 +6,7 @@ import { SnackbarProvider } from '../contexts/SnackbarContext';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import LoadingWrapper from '../components/LoadingWrapper';
+import NetworkGuard from '../components/NetworkGuard';
 import PrivyProvider from '../contexts/PriviProvider';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -31,6 +32,7 @@ export default function RootLayout({
           <FhevmProvider>
             <SnackbarProvider>
               <LoadingWrapper>
+                <NetworkGuard />
                 <div className="min-h-screen bg-gray-50 flex flex-col">
                   <Header />
                   <main className="flex-grow">{children}</main>

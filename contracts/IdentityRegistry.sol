@@ -121,6 +121,9 @@ contract IdentityRegistry is IIdentityRegistry, ZamaEthereumConfig, IdentityStor
         profile.experience = experience;
         profile.country = country;
 
+        // Automatically revoke all granted access since data has changed
+        _revokeAllAccess();
+
         emit ProfileUpdated(msg.sender, block.timestamp);
     }
 
@@ -345,5 +348,35 @@ contract IdentityRegistry is IIdentityRegistry, ZamaEthereumConfig, IdentityStor
         if (field == DataTypes.DataField.EXPERIENCE) return profile.experience;
         if (field == DataTypes.DataField.COUNTRY) return profile.country;
         revert Errors.InvalidField();
+    }
+
+    /**
+     * @dev Revoke all granted access for the caller's profile
+     * Used when profile is updated to ensure requesters don't have access to stale data
+     */
+    function _revokeAllAccess() internal {
+        address[] storage requesters = incomingRequests[msg.sender];
+
+        // Iterate through all requesters and revoke their access
+        for (uint i = 0; i < requesters.length; i++) {
+            address requester = requesters[i];
+
+            // Delete the access request
+            delete accessRequests[msg.sender][requester];
+
+            // Revoke all field access
+            for (uint j = 0; j < 7; j++) {
+                fieldAccess[msg.sender][requester][DataTypes.DataField(j)] = false;
+            }
+
+            // Remove from outgoing requests array
+            _removeFromArray(outgoingRequests[requester], msg.sender);
+
+            // Emit revocation event
+            emit AccessRevoked(msg.sender, requester);
+        }
+
+        // Clear the entire incoming requests array
+        delete incomingRequests[msg.sender];
     }
 }

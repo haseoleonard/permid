@@ -15,8 +15,6 @@ export const useDecrypt = () => {
 
   const decrypt = useCallback(
     async (handle: string, contractAddress: string): Promise<bigint> => {
-      console.log("🔓 Decrypt called with handle:", handle.toString());
-      console.log("📍 Contract address:", contractAddress);
 
       if (!isInitialized || !instance) {
         throw new Error("FHEVM not initialized");
@@ -37,7 +35,6 @@ export const useDecrypt = () => {
         const provider = await wallet.getEthereumProvider();
         const ethersProvider = new BrowserProvider(provider);
 
-        console.log("🔐 Generating keypair...");
         const keypair = instance.generateKeypair();
 
         const handleContractPairs = [

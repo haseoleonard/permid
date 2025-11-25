@@ -1,8 +1,3 @@
-/**
- * Confidential Identity - Hardhat Configuration
- * Privacy-preserving identity management with selective data sharing
- */
-
 import { HardhatUserConfig, vars } from "hardhat/config.js";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-verify";

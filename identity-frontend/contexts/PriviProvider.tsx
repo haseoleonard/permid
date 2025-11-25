@@ -10,10 +10,10 @@ export default function PrivyProvider({ children }: { children: React.ReactNode 
       config={{
         appearance: {
           theme: 'light',
-          accentColor: '#9333ea',
+          accentColor: '#10b981',
           logo: '/logo.png',
-          landingHeader: "Confidential Fundraising",
-          loginMessage: "Start funding confidentially with your wallet"
+          landingHeader: "Permid",
+          loginMessage: "Manage your identity with full encryption and control"
         },
         loginMethods: ['wallet'],
         embeddedWallets: {

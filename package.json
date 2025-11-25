@@ -1,7 +1,7 @@
 {
-  "name": "confidential-identity-contracts",
+  "name": "permid-contracts",
   "version": "1.0.0",
-  "description": "FHEVM-based confidential identity management with selective data sharing",
+  "description": "Permid - FHEVM-based confidential identity management with selective data sharing",
   "license": "MIT",
   "scripts": {
     "compile": "hardhat compile",
