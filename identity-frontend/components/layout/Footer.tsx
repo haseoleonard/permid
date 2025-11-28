@@ -1,4 +1,11 @@
+import { IDENTITY_REGISTRY_ADDRESS, getAddressUrl } from '@/lib/contracts/config';
+
 export default function Footer() {
+  const formatAddress = (address: string) => {
+    if (!address) return '';
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
   return (
     <footer className="bg-white border-t border-gray-200 mt-8 sm:mt-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -37,16 +44,16 @@ export default function Footer() {
             </a>
             <span className="hidden sm:inline">•</span>
             <span className="text-center">
-              Built by{' '}
+              Verified Contract:{' '}
               <a
-                href="https://x.com/Sei_myname150"
+                href={getAddressUrl(IDENTITY_REGISTRY_ADDRESS)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-emerald-600 transition"
+                className="hover:text-emerald-600 transition font-mono"
+                title={IDENTITY_REGISTRY_ADDRESS}
               >
-                @Sei_myname150
+                {formatAddress(IDENTITY_REGISTRY_ADDRESS)}
               </a>
-              {' '}using FHEVM
             </span>
           </div>
         </div>

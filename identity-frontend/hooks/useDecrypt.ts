@@ -76,7 +76,7 @@ export const useDecrypt = () => {
 
         const decryptedValue = result[handle as keyof typeof result];
 
-        console.log("Decryption successful:", decryptedValue);
+        console.log("Decryption successful");
 
         return BigInt(decryptedValue);
       } catch (err) {

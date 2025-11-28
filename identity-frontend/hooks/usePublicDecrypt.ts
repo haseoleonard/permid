@@ -42,7 +42,7 @@ export function usePublicDecrypt() {
       // Based on docs: instance.publicDecrypt([handles])
       const result = await instance.publicDecrypt([handle]);
 
-      console.log("publicDecrypt raw result:", result);
+      console.log("publicDecrypt completed");
 
       if (!result || typeof result !== 'object') {
         throw new Error("publicDecrypt returned invalid result");
